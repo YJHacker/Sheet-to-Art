@@ -93,8 +93,9 @@ function extractCellValue(cell: ExcelJS.Cell): string | number | boolean | null 
 
   // Standard primitive values
   if (typeof cell.value === 'object') {
-    if ('result' in (cell.value as Record<string, unknown>)) {
-      const res = (cell.value as Record<string, unknown>).result;
+    const obj = cell.value as unknown as Record<string, unknown>;
+    if ('result' in obj) {
+      const res = obj.result;
       return (res !== undefined && res !== null) ? (res as string | number | boolean) : null;
     }
   }
@@ -107,7 +108,7 @@ function inferCellType(cell: ExcelJS.Cell): Cell['type'] {
     return 'empty';
   }
 
-  if (cell.type === ExcelJS.ValueType.Formula || (typeof cell.value === 'object' && 'formula' in cell.value)) {
+  if (cell.type === ExcelJS.ValueType.Formula || (typeof cell.value === 'object' && 'formula' in (cell.value as unknown as Record<string, unknown>))) {
     return 'formula';
   }
 

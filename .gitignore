@@ -1,0 +1,65 @@
+# Added by code-review-graph
+.code-review-graph/
+
+# Environment & Shell Configuration
+.bash_history
+.bashrc
+.profile
+
+# Build outputs and dependencies (will be added when project is scaffolded)
+node_modules/
+dist/
+build/
+.vite/
+*.log
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# IDE and Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Claude Code and AI tooling
+.claude/
+.claude.json
+.claude-omniroute/
+.mcp.json
+
+# Rust/Cargo
+.cargo/
+target/
+
+# Package manager caches
+.npm/
+.pnpm-store/
+.yarn/
+
+# System directories
+.cache/
+.local/
+.config/
+
+# Testing
+coverage/
+.nyc_output/
+
+# Temporary files
+*.tmp
+*.temp
+.tmp/
+.temp/
+
+# OS generated
+Thumbs.db
+Desktop.ini
+
+# Environment variables (when added to project)
+.env
+.env.local
+.env.*.local

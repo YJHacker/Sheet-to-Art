@@ -63,3 +63,8 @@ Desktop.ini
 .env
 .env.local
 .env.*.local
+
+# Build outputs
+node_modules/
+dist/
+*.local

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import type { Cell, CellRow, CellIR } from '../../src/types/cell-ir';
+import type { Cell, CellIR } from '../../src/types/cell-ir';
 
 describe('Cell IR Type Definitions', () => {
   it('should accept a valid Cell with all fields', () => {

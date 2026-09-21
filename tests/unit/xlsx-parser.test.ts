@@ -59,7 +59,7 @@ describe('XLSX Parser', () => {
     sheet.getCell('A2').value = { formula: 'SUM(B1:B10)', result: 100 } as unknown as string;
 
     const buffer = await workbook.xlsx.writeBuffer();
-    const arrayBuffer = buffer instanceof ArrayBuffer ? buffer : buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength);
+    const arrayBuffer = buffer instanceof ArrayBuffer ? buffer : (buffer as Buffer).buffer.slice((buffer as Buffer).byteOffset, (buffer as Buffer).byteOffset + (buffer as Buffer).byteLength);
     const result = await parseXLSX(arrayBuffer as ArrayBuffer, 'formulas.xlsx', 0);
 
     expect(result.rows[0]?.cells[0]?.value).toBe(42);
@@ -80,7 +80,7 @@ describe('XLSX Parser', () => {
     cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFF0000' } };
 
     const buffer = await workbook.xlsx.writeBuffer();
-    const arrayBuffer = buffer instanceof ArrayBuffer ? buffer : buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength);
+    const arrayBuffer = buffer instanceof ArrayBuffer ? buffer : (buffer as Buffer).buffer.slice((buffer as Buffer).byteOffset, (buffer as Buffer).byteOffset + (buffer as Buffer).byteLength);
     const result = await parseXLSX(arrayBuffer as ArrayBuffer, 'conditional.xlsx', 0);
 
     const styledCell = result.rows[0]?.cells[0];

@@ -1,6 +1,6 @@
 // tests/unit/section-detector.test.ts
 import { describe, it, expect } from 'vitest';
-import type { CellIR, CellRow } from '../../src/types/cell-ir';
+import type { CellIR } from '../../src/types/cell-ir';
 import { detectSections } from '../../src/lib/layout/section-detector';
 import type { TableSection, TextSectionContent, KpiGridContent } from '../../src/types/layout-ir';
 

@@ -57,24 +57,22 @@ export function generateTypstDocument(
 
   // Header context block (visible from page 2 onwards)
   if (docTitle || showPageNumbers) {
-    lines.push('  header: context {');
-    lines.push('    if here().page() > 1 [');
-    lines.push('      #grid(');
-    lines.push('        columns: (1fr, auto),');
-    lines.push(`        align(left + bottom)[#text(size: 7pt, fill: rgb("${theme.secondaryColor}"))[${escapedDocTitle}]],`);
-    lines.push(`        align(right + bottom)[#text(size: 7pt, fill: rgb("${theme.secondaryColor}"))[Page #counter(page).display()]]`);
-    lines.push('      )');
-    lines.push('      #v(2pt)');
-    lines.push(`      #line(length: 100%, stroke: 0.5pt + rgb("${theme.borderColor}"))`);
-    lines.push('    ]');
-    lines.push('  },');
+    lines.push('  header: context if here().page() > 1 [');
+    lines.push('    #grid(');
+    lines.push('      columns: (1fr, auto),');
+    lines.push(`      align(left + bottom)[#text(size: 7pt, fill: rgb("${theme.secondaryColor}"))[${escapedDocTitle}]],`);
+    lines.push(`      align(right + bottom)[#text(size: 7pt, fill: rgb("${theme.secondaryColor}"))[Page #counter(page).display()]]`);
+    lines.push('    )');
+    lines.push('    #v(2pt)');
+    lines.push(`    #line(length: 100%, stroke: 0.5pt + rgb("${theme.borderColor}"))`);
+    lines.push('  ],');
   }
 
   // Footer context block
   if (showPageNumbers) {
-    lines.push('  footer: context {');
-    lines.push(`    #align(center)[#text(size: 7.5pt, fill: rgb("${theme.secondaryColor}"))[Page #counter(page).display()]]`);
-    lines.push('  }');
+    lines.push('  footer: context align(center)[');
+    lines.push(`    #text(size: 7.5pt, fill: rgb("${theme.secondaryColor}"))[Page #counter(page).display()]`);
+    lines.push('  ]');
   }
 
   lines.push(')');
@@ -138,12 +136,12 @@ function renderKpiSection(
   const numCols = content.columns || Math.min(content.items.length, 4) || 3;
   const colSpec = Array(numCols).fill('1fr').join(', ');
 
-  lines.push(`#grid(`);
+  lines.push('#grid(');
   lines.push(`  columns: (${colSpec}),`);
   lines.push('  gutter: 6pt,');
 
   for (const item of content.items) {
-    lines.push('  #block(');
+    lines.push('  block(');
     lines.push(`    fill: rgb("${theme.kpiBackground}"),`);
     lines.push(`    stroke: 0.5pt + rgb("${theme.kpiBorderColor}"),`);
     lines.push('    radius: 3pt,');

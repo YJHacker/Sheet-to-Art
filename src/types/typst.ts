@@ -1,4 +1,4 @@
-import type { LayoutIR, PageOrientation, PageSize } from './layout-ir';
+import type { LayoutIR, OrientationType, PageSizeType } from './layout-ir';
 
 export type ThemeName =
   | 'modern-clean'
@@ -45,8 +45,8 @@ export interface ThemeDefinition {
 
 export interface TypstGeneratorOptions {
   theme?: ThemeName | ThemeDefinition;
-  pageSize?: PageSize;
-  orientation?: PageOrientation;
+  pageSize?: PageSizeType;
+  orientation?: OrientationType;
   showPageNumbers?: boolean;
   headerTitle?: string;
   repeatTableHeaders?: boolean;

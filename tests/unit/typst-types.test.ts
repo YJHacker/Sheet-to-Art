@@ -63,5 +63,10 @@ describe('Typst Type Definitions', () => {
     };
     expect(result.pageCount).toBe(1);
     expect(result.pdfBuffer[0]).toBe(0x25);
+
+    const mockWorkerAPI: Partial<TypstWorkerAPI> = {
+      compileToPDF: async () => result.pdfBuffer,
+    };
+    expect(mockWorkerAPI.compileToPDF).toBeDefined();
   });
 });

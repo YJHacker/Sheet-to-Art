@@ -7,26 +7,26 @@
 **Repository Root:** `/root`  
 **Working Directory:** `/root`  
 **GitHub Remote:** `git@github.com:YJHacker/Sheet-to-Art.git` (synchronized)  
-**Status:** Sprint 1 (Parser & Cell IR) and Sprint 2 (Layout Heuristics & Section Engine) COMPLETE. Tasks 1–8 fully implemented and verified. All 46 unit & integration tests passing. TypeScript strict check and production build passing. Ready for Sprint 3.
+**Status:** Sprint 1 (Parser & Cell IR), Sprint 2 (Layout Heuristics & Section Engine), and Sprint 3 (Typst WASM Typesetting & PDF Generation) COMPLETE. Tasks 1–8 of Sprint 3 fully implemented and verified. All 80 unit & integration tests passing across 21 test files. TypeScript strict check and production build passing. Ready for Sprint 4.
 
 ---
 
-## Sprint 2 Execution Summary (Completed)
+## Sprint 3 Execution Summary (Completed)
 
-- **Task 1: Layout IR Type Definitions** (`src/types/layout-ir.ts`, `tests/unit/layout-ir.test.ts`) - Complete
-- **Task 2: Header Scoring Heuristic Engine** (`src/lib/layout/header-detector.ts`, `tests/unit/header-detector.test.ts`) - Complete
-- **Task 3: Column Classification & Type Inference** (`src/lib/layout/column-classifier.ts`, `tests/unit/column-classifier.test.ts`) - Complete
-- **Task 4: Column Width Allocation & Page Geometry** (`src/lib/layout/column-width-allocator.ts`, `tests/unit/column-width-allocator.test.ts`) - Complete
-- **Task 5: Section Detector & Segmentation** (`src/lib/layout/section-detector.ts`, `tests/unit/section-detector.test.ts`) - Complete
-- **Task 6: Layout Engine Orchestrator** (`src/lib/layout/layout-engine.ts`, `tests/unit/layout-engine.test.ts`) - Complete
-- **Task 7: Layout Web Worker & Comlink RPC** (`src/workers/layout.worker.ts`, `src/lib/workers.ts`, `tests/unit/layout-worker.test.ts`) - Complete
-- **Task 8: End-to-End Layout Integration Test Suite** (`tests/integration/layout-flow.test.ts`) - Complete
+- **Task 1: Package Dependencies & Typst Type Definitions** (`package.json`, `src/types/typst.ts`, `tests/unit/typst-types.test.ts`) - Complete
+- **Task 2: Typst Syntax Escaper & Sanitizer** (`src/lib/typst/typst-escaper.ts`, `tests/unit/typst-escaper.test.ts`) - Complete
+- **Task 3: Theme Configuration & Styling Engine (5 Themes)** (`src/lib/typst/themes.ts`, `tests/unit/typst-themes.test.ts`) - Complete
+- **Task 4: Typst Document & Section Generator** (`src/lib/typst/typst-generator.ts`, `tests/unit/typst-generator.test.ts`) - Complete
+- **Task 5: PDF Buffer Assembler & Merging with pdf-lib** (`src/lib/typst/pdf-assembler.ts`, `tests/unit/pdf-assembler.test.ts`) - Complete
+- **Task 6: Typst WASM Compiler & Engine Bridge** (`src/lib/typst/typst-compiler.ts`, `tests/unit/typst-compiler.test.ts`) - Complete
+- **Task 7: Typst Web Worker & Comlink RPC Integration** (`src/workers/typst.worker.ts`, `src/lib/workers.ts`, `tests/unit/typst-worker.test.ts`) - Complete
+- **Task 8: End-to-End Spreadsheet-to-PDF Integration Suite** (`tests/integration/pdf-generation-flow.test.ts`) - Complete
 
 ### Quality Gates Status:
-- **Unit & Integration Tests:** 46 passed across 13 test files (`npm test -- --run`)
+- **Unit & Integration Tests:** 80 passed across 21 test files (`npm test -- --run`)
 - **TypeScript Typecheck:** `npx tsc --noEmit` clean (0 errors)
-- **Production Build:** `npm run build` (`tsc && vite build`) successful (0 errors, 4 assets bundled)
-- **GitHub Backup:** Pushed to `git@github.com:YJHacker/Sheet-to-Art.git` master branch
+- **Production Build:** `npm run build` (`tsc && vite build`) successful (0 errors, 3 worker bundles + WASM asset)
+- **GitHub Backup:** Ready for push to `git@github.com:YJHacker/Sheet-to-Art.git` master branch
 
 ---
 
@@ -90,15 +90,14 @@ Four parallel research tracks were executed prior to architecture specification:
 | **XLSX Parser** | `exceljs (^4.4.0)` | MIT license, extracts font weights, ARGB fills, borders, merged cell coordinates. |
 | **CSV Parser** | `papaparse (^5.4.0)` | High-performance, streaming browser CSV parsing with delimiter detection. |
 | **Worker Bridge** | `comlink (^4.4.1)` | Type-safe RPC abstraction over Web Workers. |
-| **Typesetting & PDF** | `@myriaddreamin/typst.ts (^0.5.0)` | WASM-compiled Typst engine; sub-second compilation, native repeating table headers, pristine typography. |
+| **Typesetting & PDF** | `@myriaddreamin/typst.ts (^0.7.0)` | WASM-compiled Typst engine; sub-second compilation, native repeating table headers, pristine typography. |
 | **PDF Assembly** | `pdf-lib (^1.17.1)` | Fast in-memory PDF buffer merging, page numbering offsets, and document assembly. |
 | **UI Framework** | `React 18+` + `Tailwind CSS` + `Lucide Icons` | Declarative UI state, responsive preview controls, clean modern aesthetic. |
-| **State Management** | `Zustand (^4.5.0)` | Minimal 3KB store for upload state, progress tracking, and theme/layout parameters. |
 | **Testing** | `Vitest` + `Playwright` | Lightning-fast unit tests for layout math + visual regression tests for PDF snapshots. |
 
 ---
 
-## 5. Layout Engine Design
+## 5. Layout & PDF Generation Engine Design
 
 ### 5.1 Pipeline Stages
 ```
@@ -117,7 +116,7 @@ Table Section & Column Descriptors (Layout IR)
 Typst 0.11+ Code with Context Blocks
        │
        ▼ [Typst WASM Compiler + pdf-lib]
-Print-Ready PDF Binary
+Print-Ready PDF Binary (Uint8Array with %PDF- header)
 ```
 
 ### 5.2 Header Heuristic Formula
@@ -138,103 +137,29 @@ $$S = 0.60B + 0.30T + 0.05F + 0.03C + 0.02U$$
 
 ---
 
-## 6. PDF Generation Strategy
+## 6. PDF Generation Strategy & Themes
 
-- Generates clean Typst source code utilizing modern Typst 0.11+ `context` syntax (replacing deprecated `locate` closures):
-  ```typst
-  header: context {
-    if here().page() > 1 [
-      #grid(columns: (1fr, 1fr), align(left)[#text(size: 8pt)[Title]], align(right)[#text(size: 8pt)[Page #here().page()]])
-      #v(2pt)
-      #line(length: 100%, stroke: 0.5pt + luma(200))
-    ]
-  }
-  ```
-- Handles multi-table / multi-section splitting via Typst native table page breaks.
-- Uses `pdf-lib` to stitch multi-section PDF byte streams into a unified document blob when necessary.
+- Modern Typst 0.11+ source generation with `context` blocks for dynamic headers/footers.
+- Automatic repeating table headers via `table.header(...)`.
+- 5 launch themes:
+  1. `modern-clean` (Default sans-serif, blue accent `#2563EB`, subtle slate borders)
+  2. `executive-serif` (Classic serif typography, dark slate `#1E293B` header)
+  3. `compact-ledger` (High density, monospace-accented, tight padding)
+  4. `emerald-report` (Modern dashboard green `#059669`)
+  5. `monochrome-pure` (Crisp black & white laser printing)
+- Zero external network calls during compilation; 100% offline WASM execution.
 
 ---
 
-## 7. UI & Theme Decisions
-
-### 7.1 UX Interaction Flow
-1. **Dropzone:** Minimalist drag-and-drop file uploader accepting `.xlsx` and `.csv`.
-2. **Analysis Progress:** Granular progress stages (*Parsing Workbook → Detecting Sections → Optimizing Columns → Typesetting PDF*).
-3. **Interactive Studio:** Side-by-side view with live interactive document preview (page navigation) and controls (layout mode, theme, page format, orientation).
-4. **Export:** One-click download of the generated PDF document.
-
-### 7.2 Five Core Launch Themes
-1. **Modern Clean:** Sans-serif (Inter), subtle borders, soft blue accent (`#2563EB`), alternating light gray rows.
-2. **Executive Serif:** Classic serif typography (Libertinus/Georgia), dark slate headers (`#1E293B`), warm paper tone.
-3. **Compact Ledger:** Monospace-accented, high density, tight padding, maximum paper efficiency.
-4. **Emerald Report:** Forest green accents (`#059669`), modern dashboard table styling.
-5. **Monochrome Pure:** High-contrast black & white styling optimized for crisp laser printing.
-
----
-
-## 8. Security & Privacy Architecture
+## 7. Security & Privacy Architecture
 
 - **Execution Environment:** 100% Client-Side. No spreadsheet contents or generated documents are sent to any remote server.
 - **Content Security Policy (CSP):** Strict CSP enforcing `connect-src 'self'`, `worker-src 'self' blob:`, and `script-src 'self' 'wasm-unsafe-eval'`.
-- **Storage Boundaries:** IndexedDB stores only immutable WASM binaries and fonts. Zero PII / cell values in persistent storage.
-- **Sanitization:** Input escaping for Typst markup special characters (`\`, `#`, `$`, `[`, `]`, `*`, `_`).
+- **Sanitization:** Input escaping for all Typst markup special characters (`\`, `#`, `$`, `[`, `]`, `*`, `_`, `@`, `<`, `>`, `"`, `~`).
 
 ---
 
-## 9. Testing Strategy
+## 8. Exact Next Implementation Steps
 
-1. **Unit Testing (Vitest):**
-   - Header heuristic scoring across edge cases (all-numeric data, missing headers, multi-level headers).
-   - Column typing accuracy (currency, percentage, ISO dates, mixed data).
-   - Column width allocation and constraint boundary math.
-   - Typst markup escaping and sanitization.
-2. **Visual & Regression Testing (Playwright):**
-   - **Critical Regression Test:** Multi-section study planner sheet (Month-wise plan contiguous, no orphaned headers, grouped trailing notes).
-   - Adversarial sheets: Merged cells, 30+ columns, empty rows/columns, formula errors (`#DIV/0!`, `#N/A`).
-   - PDF snapshot comparison using `pdf-img-convert` + `toMatchImageSnapshot`.
-
----
-
-## 10. MVP Scope Boundaries
-
-### In-Scope for Phase 1 MVP
-- `.xlsx` and `.csv` parsing.
-- Automated single-sheet structure and table detection.
-- Deterministic column width allocation and header detection.
-- A4, Letter, Legal, A3, A5 page sizes with Portrait / Landscape / Auto-orientation.
-- 5 launch themes.
-- Interactive live preview in browser.
-- One-click PDF download.
-- Full regression suite with adversarial spreadsheets.
-
-### Deferred to Phase 2
-- Multi-sheet tab selector / combined multi-sheet PDF generation.
-- Natural language editing commands ("Fix this page", "Fit into 2 pages").
-- Embedded image and chart object extraction.
-- User accounts, saved documents, and cloud sync.
-
----
-
-## 11. Unresolved Decisions / Future Options
-1. **Multi-Sheet Default:** In MVP, default to active/first non-empty sheet with a basic tab switcher, deferring complex multi-sheet merged document chapters to Phase 2.
-2. **WASM Preloading vs. Lazy Loading:** Initial WASM binary (~800KB compressed) can be preloaded during idle browser time after landing page load, or lazy-loaded on file drop.
-
----
-
-## 12. Important File Paths
-
-- **Architectural Spec:** `/root/docs/superpowers/specs/2026-09-21-spreadsheet-pdf-engine-design.md`
-- **Project Handoff:** `/root/PROJECT_STATE.md`
-- **Project Instructions:** `/root/CLAUDE.md`
-
----
-
-## 13. Exact Next Implementation Steps
-
-When ready to proceed to implementation, follow the approved sprint sequence:
-1. **Step 1:** Invoke the `superpowers:writing-plans` skill to generate the detailed step-by-step implementation plan based on the architectural specification.
-2. **Step 2 (Sprint 1):** Initialize project scaffold (Vite + React + TypeScript + Tailwind) and implement Core Parsing & `Cell IR` (Web Worker with ExcelJS & CSV parser).
-3. **Step 3 (Sprint 2):** Implement Layout Worker with Header Scoring heuristic, column typing, and `Layout IR` builder.
-4. **Step 4 (Sprint 3):** Implement Typst Worker with `@myriaddreamin/typst.ts` WASM compilation, Typst 0.11+ template generator, and `pdf-lib` assembly.
-5. **Step 5 (Sprint 4):** Build Interactive Studio UI, live preview component, and 5 launch themes.
-6. **Step 6 (Sprint 5):** Build adversarial spreadsheet test fixtures, regression suite, and E2E verification.
+- **Sprint 4 (Next):** Interactive Studio UI, live PDF preview component, theme switcher, and export controls.
+- **Sprint 5 (Planned):** Adversarial spreadsheet fixtures, Playwright visual regression suite, and final polish.

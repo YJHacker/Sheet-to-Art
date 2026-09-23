@@ -1,6 +1,6 @@
 # Worker Architecture
 
-This directory contains Web Workers that handle computationally expensive parsing operations off the main thread.
+This directory contains Web Workers that handle computationally intensive operations off the main thread to maintain 60fps UI responsiveness.
 
 ## Workers
 
@@ -20,63 +20,51 @@ interface ParserWorkerAPI {
 
 **Responsibilities:**
 - File format detection (`.xlsx`, `.csv`, reject `.xls`)
-- Delegate to appropriate parser (XLSX or CSV)
-- Error handling and user-friendly error messages
+- Delegate to appropriate parser (XLSX via ExcelJS or CSV via PapaParse)
+- Normalized extraction into `CellIR`
 
-### `xlsx-parser.ts`
-ExcelJS-based XLSX parser.
+### `layout.worker.ts`
+Main layout worker entry point. Exposes `LayoutWorkerAPI` via Comlink RPC.
 
-**Function:**
+**API:**
 ```typescript
-parseXLSX(
-  buffer: ArrayBuffer,
-  fileName: string,
-  sheetIndex: number
-): Promise<CellIR>
+interface LayoutWorkerAPI {
+  analyzeLayout(
+    cellIR: CellIR,
+    options?: LayoutOptions,
+    onProgress?: (progress: number) => void
+  ): Promise<LayoutIR>;
+}
 ```
 
-**Features:**
-- Extract cell values, types (string, number, boolean, date, formula, empty)
-- Extract styles (bold, italic, font size, text/background colors, alignment, number format)
-- Handle merged cells (single cell at top-left position, not duplicated)
-- Strip formulas, preserve cached display values
-- Handle rich text, hyperlinks, formula errors
-
-### `csv-parser.ts`
-PapaParse-based CSV parser.
-
-**Function:**
-```typescript
-parseCSV(
-  buffer: ArrayBuffer,
-  fileName: string
-): Promise<CellIR>
-```
-
-**Features:**
-- Auto-detect delimiter (comma, semicolon, tab)
-- Infer cell types (string, number, boolean, date, empty)
-- Handle inconsistent column counts (normalize to max)
-- UTF-8 text decoding
+**Responsibilities:**
+- Multi-section segmentation (tables, KPI metric grids, text notes)
+- Deterministic header detection scoring formula ($S = 0.60B + 0.30T + 0.05F + 0.03C + 0.02U$)
+- Column classification, data typing, and alignment inference
+- Proportional column width allocation using square-root weighting ($w_j \propto \sqrt{\text{length}_j}$)
+- Automatic page orientation optimization and typography scaling
 
 ## Communication Protocol
 
-All Workers use **Comlink RPC** exclusively.
+All Web Workers communicate using **Comlink RPC** exclusively with type-safe proxy bridges in `src/lib/workers.ts`.
 
 ### Main Thread Usage
 
 ```typescript
-import { parserWorker } from './lib/workers';
+import { parserWorker, layoutWorker } from './lib/workers';
 
+// 1. Parse spreadsheet into Cell IR
 const buffer = await file.arrayBuffer();
 const cellIR = await parserWorker.parseFile(buffer, file.name, 0);
+
+// 2. Analyze layout into Layout IR
+const layoutIR = await layoutWorker.analyzeLayout(cellIR, { pageSize: 'a4' });
 ```
 
 ## Testing
 
-Workers are tested via:
-1. **Unit tests**: Direct function calls to `parseXLSX` and `parseCSV`
-2. **Worker API tests**: Full format detection and error handling
-3. **Integration tests**: End-to-end parse flow and performance verification
+Workers and layout engines are tested via:
+1. **Unit tests**: Individual heuristics, classification, width math, and worker APIs
+2. **Integration tests**: End-to-end parse and layout pipeline flows
 
 Run: `npm test`

@@ -26,7 +26,18 @@
 - **Unit & Integration Tests:** 80 passed across 21 test files (`npm test -- --run`)
 - **TypeScript Typecheck:** `npx tsc --noEmit` clean (0 errors)
 - **Production Build:** `npm run build` (`tsc && vite build`) successful (0 errors, 3 worker bundles + WASM asset)
-- **GitHub Backup:** Ready for push to `git@github.com:YJHacker/Sheet-to-Art.git` master branch
+- **GitHub Backup:** Synchronized with `git@github.com:YJHacker/Sheet-to-Art.git` master branch
+
+---
+
+## Tool & MCP Integration Audit
+
+| Integration / Tool | Available | Used in Sprints 1–3 | Role in Sprint 4 & Later |
+|---|---|---|---|
+| **Superpowers** | Yes | Yes (Brainstorming, planning, TDD execution) | High — Sprint 4 planning, feature breakdown, and execution. |
+| **Geo SEO** | Yes | No (Headless engine sprints) | Post-MVP / Launch — Public landing page optimization and discoverability. |
+| **Code Review Graph** | Yes | Partial (Automated graph indexing active) | Sprint 5 & Beyond — Impact analysis, architectural audits, and regression testing. |
+| **UI UX Pro Max** | Yes | No (Headless engine sprints) | Immediate (Sprint 4) — Interactive Studio UI, responsive preview canvas, dropzone, and 5-theme controls. |
 
 ---
 
@@ -159,7 +170,15 @@ $$S = 0.60B + 0.30T + 0.05F + 0.03C + 0.02U$$
 
 ---
 
-## 8. Exact Next Implementation Steps
+## 8. Exact Next Steps for Sprint 4 (Resuming Tomorrow)
 
-- **Sprint 4 (Next):** Interactive Studio UI, live PDF preview component, theme switcher, and export controls.
-- **Sprint 5 (Planned):** Adversarial spreadsheet fixtures, Playwright visual regression suite, and final polish.
+1. **Sprint 4 Implementation Planning:**
+   - Create `docs/superpowers/plans/2026-09-24-sprint-4-interactive-studio-ui.md` using `superpowers:writing-plans`.
+2. **Interactive Studio UI Components:**
+   - Drag-and-drop file upload zone with format validation (`.xlsx`, `.csv`).
+   - Granular progress bar component connected to Comlink worker callbacks.
+   - Interactive side-by-side studio workspace with zoom, page navigation, and responsive canvas/PDF viewport.
+   - Control sidebar: Theme selector (5 themes), Page Size (`A4`, `Letter`, `Legal`, `A3`, `A5`), Orientation (`Auto`, `Portrait`, `Landscape`), Font Scale, and Title customization.
+   - One-click PDF download & export button.
+3. **State Management:**
+   - Lightweight Zustand store managing file state, layout parameters, preview URL blob, and active theme.

@@ -44,6 +44,8 @@ target/
 .cache/
 .local/
 .config/
+.ssh/
+architectural-spec.md
 
 # Testing
 coverage/

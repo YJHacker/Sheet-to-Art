@@ -9,6 +9,8 @@
     "test:watch": "vitest"
   },
   "dependencies": {
+    "@myriaddreamin/typst-ts-renderer": "^0.7.0",
+    "@myriaddreamin/typst-ts-web-compiler": "^0.7.0",
     "@myriaddreamin/typst.ts": "^0.7.0",
     "comlink": "^4.4.1",
     "exceljs": "^4.4.0",

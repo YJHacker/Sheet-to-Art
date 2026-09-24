@@ -3,6 +3,19 @@ import react from '@vitejs/plugin-react';
 
 export default defineConfig({
   plugins: [react()],
+  server: {
+    watch: {
+      ignored: [
+        '**/.cargo/**',
+        '**/.rustup/**',
+        '**/.code-review-graph/**',
+        '**/.claude-omniroute/**',
+        '**/.claude/**',
+        '**/node_modules/**',
+        '**/dist/**',
+      ],
+    },
+  },
   worker: {
     format: 'es',
     plugins: () => [react()],

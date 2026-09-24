@@ -1,5 +1,5 @@
 import type { CellIR } from './cell-ir';
-import type { LayoutIR, OrientationType, PageSizeType } from './layout-ir';
+import type { LayoutIR, PageSizeType, OrientationType } from './layout-ir';
 import type { ThemeName, PDFRenderResult } from './typst';
 
 export type PipelineStage = 'idle' | 'parsing' | 'layout' | 'compiling' | 'ready' | 'error';
@@ -7,6 +7,8 @@ export type PipelineStage = 'idle' | 'parsing' | 'layout' | 'compiling' | 'ready
 export type LayoutModePreset = 'auto' | 'compact' | 'balanced' | 'presentation' | 'print-saver';
 
 export type MarginPreset = 'compact' | 'normal' | 'spacious';
+
+export type StudioOrientation = 'auto' | OrientationType;
 
 export interface PipelineProgress {
   stage: PipelineStage;
@@ -18,7 +20,7 @@ export interface PipelineProgress {
 export interface StudioOptions {
   theme: ThemeName;
   pageSize: PageSizeType;
-  orientation: OrientationType;
+  orientation: StudioOrientation;
   layoutMode: LayoutModePreset;
   marginPreset: MarginPreset;
   fontScale: number; // 7.0 to 12.0 pt

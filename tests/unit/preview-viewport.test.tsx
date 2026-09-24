@@ -1,4 +1,3 @@
-import React from 'react';
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { ZoomControls } from '../../src/components/preview/ZoomControls';
@@ -9,60 +8,77 @@ import { PreviewViewport } from '../../src/components/preview/PreviewViewport';
 import type { LayoutIR } from '../../src/types/layout-ir';
 
 const mockLayoutIR: LayoutIR = {
-  documentTitle: 'Annual Executive Summary',
-  pageSize: 'a4',
-  orientation: 'portrait',
-  totalPagesEstimate: 2,
+  documentType: 'report',
+  title: 'Annual Executive Summary',
+  globalStyles: {
+    pageSize: 'a4',
+    orientation: 'portrait',
+    margins: { top: 15, right: 15, bottom: 15, left: 15 },
+    fontFamily: 'Liberation Sans',
+    baseFontSize: 8.5,
+    theme: 'modern-clean',
+  },
   sections: [
     {
-      id: 'sec-kpi',
       type: 'kpi-grid',
       title: 'Financial Highlights',
-      startRow: 0,
-      endRow: 1,
-      rowCount: 2,
-      colCount: 3,
-      data: [
-        [
-          { rawValue: 'Total ARR', formattedValue: 'Total ARR', dataType: 'string', row: 0, col: 0 },
-          { rawValue: '$24.5M', formattedValue: '$24.5M', dataType: 'currency', row: 0, col: 1 },
-          { rawValue: '+34% YoY', formattedValue: '+34% YoY', dataType: 'percentage', row: 0, col: 2 },
+      content: {
+        columns: 3,
+        items: [
+          { label: 'Total ARR', value: '$24.5M', change: '+34% YoY' },
+          { label: 'Net Retention', value: '118%', change: '+2% YoY' },
+          { label: 'Gross Margin', value: '78.5%', change: '+1.5% YoY' },
         ],
-      ],
+      },
     },
     {
-      id: 'sec-table',
       type: 'table',
       title: 'Quarterly Breakdown',
-      startRow: 2,
-      endRow: 6,
-      rowCount: 5,
-      colCount: 3,
-      headers: [
-        {
-          rowIndex: 2,
-          cells: [
-            { rawValue: 'Quarter', formattedValue: 'Quarter', dataType: 'string', row: 2, col: 0 },
-            { rawValue: 'Target', formattedValue: 'Target', dataType: 'string', row: 2, col: 1 },
-            { rawValue: 'Actual', formattedValue: 'Actual', dataType: 'string', row: 2, col: 2 },
-          ],
-        },
-      ],
-      columns: [
-        { index: 0, headerName: 'Quarter', inferredType: 'string', widthPt: 100, minWidthPt: 60, isNumeric: false, alignment: 'left' },
-        { index: 1, headerName: 'Target', inferredType: 'currency', widthPt: 100, minWidthPt: 60, isNumeric: true, alignment: 'right' },
-        { index: 2, headerName: 'Actual', inferredType: 'currency', widthPt: 100, minWidthPt: 60, isNumeric: true, alignment: 'right' },
-      ],
-      rows: [
-        {
-          rowIndex: 3,
-          cells: [
-            { rawValue: 'Q1', formattedValue: 'Q1', dataType: 'string', row: 3, col: 0 },
-            { rawValue: '$5.0M', formattedValue: '$5.0M', dataType: 'currency', row: 3, col: 1 },
-            { rawValue: '$5.2M', formattedValue: '$5.2M', dataType: 'currency', row: 3, col: 2 },
-          ],
-        },
-      ],
+      content: {
+        headerStyle: { bold: true, bgColor: '#F1F5F9', textColor: '#0F172A' },
+        alternatingRows: true,
+        columns: [
+          {
+            index: 0,
+            header: 'Quarter',
+            dataType: 'text',
+            alignment: 'left',
+            minWidth: 60,
+            maxWidth: 120,
+            suggestedWidth: 100,
+            stats: { nullCount: 0, uniqueValues: 4, maxLength: 2 },
+          },
+          {
+            index: 1,
+            header: 'Target',
+            dataType: 'number',
+            alignment: 'right',
+            minWidth: 60,
+            maxWidth: 120,
+            suggestedWidth: 100,
+            stats: { nullCount: 0, uniqueValues: 4, maxLength: 6 },
+          },
+          {
+            index: 2,
+            header: 'Actual',
+            dataType: 'number',
+            alignment: 'right',
+            minWidth: 60,
+            maxWidth: 120,
+            suggestedWidth: 100,
+            stats: { nullCount: 0, uniqueValues: 4, maxLength: 6 },
+          },
+        ],
+        rows: [
+          {
+            cells: [
+              { value: 'Q1', formattedValue: 'Q1', alignment: 'left' },
+              { value: 5000000, formattedValue: '$5.0M', alignment: 'right' },
+              { value: 5200000, formattedValue: '$5.2M', alignment: 'right' },
+            ],
+          },
+        ],
+      },
     },
   ],
 };

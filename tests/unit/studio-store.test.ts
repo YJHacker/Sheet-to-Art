@@ -65,20 +65,24 @@ describe('useStudioStore - Central State Management', () => {
 
   it('should update document data and totalPages', () => {
     const store = useStudioStore.getState();
-    const mockCellIR = {
-      matrix: [],
-      properties: {},
-      merges: [],
+    const mockCellIR: CellIR = {
+      rows: [],
       metadata: { totalRows: 10, totalCols: 4, fileName: 'data.csv', sheetName: 'Sheet1' },
-    } as CellIR;
+    };
 
-    const mockLayoutIR = {
+    const mockLayoutIR: LayoutIR = {
+      documentType: 'report',
+      title: 'Data',
+      globalStyles: {
+        pageSize: 'a4',
+        orientation: 'portrait',
+        margins: { top: 15, right: 15, bottom: 15, left: 15 },
+        fontFamily: 'Liberation Sans',
+        baseFontSize: 8.5,
+        theme: 'modern-clean',
+      },
       sections: [],
-      globalStyles: {} as any,
-      metadata: { totalRows: 10, totalCols: 4, documentType: 'table', title: 'Data' },
-      pageSize: 'a4',
-      orientation: 'portrait',
-    } as LayoutIR;
+    };
 
     const mockPdfResult: PDFRenderResult = {
       pdfBuffer: new Uint8Array([0x25, 0x50, 0x44, 0x46, 0x2d]),

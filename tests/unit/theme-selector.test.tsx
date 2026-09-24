@@ -1,8 +1,6 @@
-import React from 'react';
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { ThemeSelector } from '../../src/components/studio/ThemeSelector';
-import type { ThemeName } from '../../src/types/typst';
 
 describe('ThemeSelector Component', () => {
   it('renders all 5 launch theme cards', () => {

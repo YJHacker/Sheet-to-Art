@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import {
   executeDocumentPipeline,
   recompilePDF,
@@ -49,9 +49,9 @@ describe('Document Pipeline Orchestrator', () => {
     });
 
     expect(typstOpts.theme).toBe('emerald-report');
-    expect(typstOpts.customTitle).toBe('Custom Report Title');
+    expect(typstOpts.headerTitle).toBe('Custom Report Title');
     expect(typstOpts.baseFontSize).toBe(9.0);
-    expect(typstOpts.repeatHeader).toBe(true);
+    expect(typstOpts.repeatTableHeaders).toBe(true);
   });
 
   it('mapStudioOptionsToLayoutOptions maps StudioOptions to LayoutOptions', () => {
@@ -113,3 +113,4 @@ describe('Document Pipeline Orchestrator', () => {
     expect(recompiled.pdfBlobUrl).toBeDefined();
   });
 });
+

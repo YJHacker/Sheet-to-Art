@@ -33,8 +33,8 @@ export const Header: React.FC<HeaderProps> = ({
               Studio
             </span>
           </div>
-          <span className="text-xs text-slate-400 hidden sm:inline">
-            Intelligent Document & PDF Typesetting Engine
+          <span className="text-xs text-slate-500 truncate max-w-xs" title={fileName || 'Publication Document'}>
+            {fileName || 'Intelligent Document & PDF Typesetting Engine'}
           </span>
         </div>
       </div>

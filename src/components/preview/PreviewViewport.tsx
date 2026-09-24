@@ -5,7 +5,6 @@ import { ZoomControls } from './ZoomControls';
 import { PageNav } from './PageNav';
 import { PDFViewer } from './PDFViewer';
 import { DOMPreviewFallback } from './DOMPreviewFallback';
-import { Button } from '../common/Button';
 
 export interface PreviewViewportProps {
   layoutIR: LayoutIR | null;

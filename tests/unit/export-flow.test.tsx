@@ -1,4 +1,3 @@
-import React from 'react';
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { Header } from '../../src/components/studio/Header';
@@ -90,6 +89,8 @@ describe('Header, Toolbar & Export Flow', () => {
         <ExportModal
           isOpen={false}
           defaultFileName="test.xlsx"
+          pageCount={1}
+          fileSize={1024}
           onClose={vi.fn()}
           onDownload={vi.fn()}
           onPrint={vi.fn()}

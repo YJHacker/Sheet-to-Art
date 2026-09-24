@@ -1,5 +1,5 @@
 // src/App.tsx
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useStudioStore } from './store/useStudioStore';
 import { executeDocumentPipeline, recompilePDF, revokePDFBlobUrl } from './lib/pipeline/document-pipeline';
 import { getSampleSpreadsheet } from './lib/utils/sample-data';

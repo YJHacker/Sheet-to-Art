@@ -12,11 +12,11 @@ export function mapStudioOptionsToTypstOptions(options: StudioOptions): TypstGen
   return {
     theme: options.theme,
     pageSize: options.pageSize,
-    orientation: options.orientation,
+    orientation: options.orientation === 'auto' ? undefined : options.orientation,
     baseFontSize: options.fontScale,
-    customTitle: options.customTitle || undefined,
-    repeatHeader: options.repeatTableHeaders,
-    pageNumbering: options.showPageNumbers ? '1' : undefined,
+    headerTitle: options.customTitle || undefined,
+    repeatTableHeaders: options.repeatTableHeaders,
+    showPageNumbers: options.showPageNumbers,
   };
 }
 
@@ -27,7 +27,6 @@ export function mapStudioOptionsToLayoutOptions(options: StudioOptions): LayoutO
   return {
     pageSize: options.pageSize,
     orientation: options.orientation,
-    maxTableColumns: 25,
   };
 }
 
@@ -35,7 +34,7 @@ export function mapStudioOptionsToLayoutOptions(options: StudioOptions): LayoutO
  * Creates a browser Blob Object URL from a PDF Uint8Array buffer.
  */
 export function createPDFBlobUrl(pdfBuffer: Uint8Array): string {
-  const blob = new Blob([pdfBuffer], { type: 'application/pdf' });
+  const blob = new Blob([pdfBuffer as unknown as BlobPart], { type: 'application/pdf' });
   if (typeof URL !== 'undefined' && typeof URL.createObjectURL === 'function') {
     return URL.createObjectURL(blob);
   }
@@ -88,7 +87,7 @@ export async function executeDocumentPipeline(
     // 1. Parsing Stage (0% - 30%)
     notify('parsing', 10, `Parsing spreadsheet structure from ${fileName}...`);
     const cellIR = await parserWorker.parseFile(buffer, fileName, sheetIndex);
-    notify('parsing', 30, `Parsed ${cellIR.totalRows} rows and ${cellIR.totalCols} columns successfully.`);
+    notify('parsing', 30, `Parsed ${cellIR.metadata.totalRows} rows and ${cellIR.metadata.totalCols} columns successfully.`);
 
     // 2. Layout Analysis Stage (30% - 65%)
     notify('layout', 40, 'Analyzing document semantics, table boundaries, and headers...');

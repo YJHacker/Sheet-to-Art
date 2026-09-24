@@ -7,7 +7,11 @@ import { sanitizeFileName } from './formatters';
 export function downloadBlob(blob: Blob, filename: string): void {
   if (typeof window === 'undefined' || typeof document === 'undefined') return;
 
-  const url = URL.createObjectURL(blob);
+  const url =
+    typeof URL !== 'undefined' && typeof URL.createObjectURL === 'function'
+      ? URL.createObjectURL(blob)
+      : `blob:mock-download-${Date.now()}`;
+
   const link = document.createElement('a');
   link.href = url;
   link.download = filename;
@@ -17,9 +21,15 @@ export function downloadBlob(blob: Blob, filename: string): void {
   document.body.removeChild(link);
 
   // Clean up object URL
-  setTimeout(() => {
-    URL.revokeObjectURL(url);
-  }, 1000);
+  if (typeof URL !== 'undefined' && typeof URL.revokeObjectURL === 'function') {
+    setTimeout(() => {
+      try {
+        URL.revokeObjectURL(url);
+      } catch {
+        // ignore
+      }
+    }, 1000);
+  }
 }
 
 /**
@@ -35,9 +45,9 @@ export function downloadPDF(
   if (pdfData instanceof Blob) {
     blob = pdfData;
   } else if (pdfData instanceof Uint8Array) {
-    blob = new Blob([pdfData], { type: 'application/pdf' });
+    blob = new Blob([pdfData as unknown as BlobPart], { type: 'application/pdf' });
   } else {
-    blob = new Blob([new Uint8Array(pdfData)], { type: 'application/pdf' });
+    blob = new Blob([new Uint8Array(pdfData) as unknown as BlobPart], { type: 'application/pdf' });
   }
 
   downloadBlob(blob, safeName);

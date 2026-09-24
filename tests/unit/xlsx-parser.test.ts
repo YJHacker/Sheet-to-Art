@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'fs';
-import { parseXLSX } from '../../src/workers/xlsx-parser';
+import { parseXLSX, getWorkbookInfoXLSX } from '../../src/workers/xlsx-parser';
 
 describe('XLSX Parser', () => {
   it('should parse a simple 3x3 table', async () => {
@@ -22,6 +22,24 @@ describe('XLSX Parser', () => {
     expect(dataRow?.cells[0]?.value).toBe('Alice');
     expect(dataRow?.cells[1]?.value).toBe(30);
     expect(dataRow?.cells[2]?.value).toBe('NYC');
+  });
+
+  it('should extract all 7 sheet names and metadata from GATE2027 workbook fixture', async () => {
+    const buffer = readFileSync('tests/fixtures/GATE2027_Tracker_AllBranches.xlsx');
+    const arrayBuffer = buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength);
+
+    const info = await getWorkbookInfoXLSX(arrayBuffer, 'GATE2027_Tracker_AllBranches.xlsx');
+    expect(info.sheetNames).toEqual(['START HERE', 'CS', 'DA', 'ECE', 'EE', 'ME', 'CE']);
+    expect(info.sheets).toHaveLength(7);
+    expect(info.sheets[0]?.name).toBe('START HERE');
+    expect(info.sheets[1]?.name).toBe('CS');
+
+    // Parse sheet index 1 (CS)
+    const csSheet = await parseXLSX(arrayBuffer, 'GATE2027_Tracker_AllBranches.xlsx', 1);
+    expect(csSheet.metadata.sheetName).toBe('CS');
+    expect(csSheet.metadata.sheetNames).toEqual(['START HERE', 'CS', 'DA', 'ECE', 'EE', 'ME', 'CE']);
+    expect(csSheet.metadata.activeSheetIndex).toBe(1);
+    expect(csSheet.rows.length).toBeGreaterThan(50);
   });
 
   it('should extract bold and background fill styles', async () => {

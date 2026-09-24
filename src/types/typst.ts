@@ -51,6 +51,9 @@ export interface TypstGeneratorOptions {
   headerTitle?: string;
   repeatTableHeaders?: boolean;
   baseFontSize?: number;
+  marginPreset?: 'compact' | 'normal' | 'spacious';
+  layoutMode?: 'auto' | 'compact' | 'balanced' | 'presentation' | 'print-saver';
+  showSectionSummary?: boolean;
 }
 
 export interface PDFRenderResult {

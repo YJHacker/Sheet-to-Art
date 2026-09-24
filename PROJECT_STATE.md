@@ -7,28 +7,40 @@
 **Repository Root:** `/root`  
 **Working Directory:** `/root`  
 **GitHub Remote:** `git@github.com:YJHacker/Sheet-to-Art.git` (synchronized)  
-**Status:** Sprint 1 (Parser & Cell IR), Sprint 2 (Layout Heuristics & Section Engine), Sprint 3 (Typst WASM Typesetting & PDF Generation), and Sprint 4 (Interactive Studio UI, Live Preview & 5 Themes) COMPLETE. Tasks 1–10 of Sprint 4 fully implemented and verified. All 135 unit & integration tests passing across 32 test files. TypeScript strict check and production build passing with 0 errors.
+**Status:** Sprint 1 (Parser & Cell IR), Sprint 2 (Layout Heuristics & Section Engine), Sprint 3 (Typst WASM Typesetting & PDF Generation), and Sprint 4 (Interactive Studio UI, Live Preview & 5 Themes + Full Remediation) COMPLETE. Forensic audit remediation executed and verified against canonical 7-sheet repository fixture `GATE2027_Tracker_AllBranches.xlsx`. All 142 unit & integration tests passing across 34 test files. TypeScript strict check and production build passing with 0 errors.
 
 ---
 
-## Sprint 4 Execution Summary (Completed)
+## Sprint 4 Remediation Summary (Completed & Verified)
 
-- **Task 1: Package Dependencies, Studio Type Definitions & Zustand Store** (`src/types/studio.ts`, `src/store/useStudioStore.ts`, `tests/unit/studio-store.test.ts`) - Complete
-- **Task 2: End-to-End Document Pipeline Orchestrator & Sample Datasets** (`src/lib/pipeline/document-pipeline.ts`, `src/lib/utils/formatters.ts`, `src/lib/utils/download.ts`, `src/lib/utils/sample-data.ts`, `tests/unit/sample-data.test.ts`, `tests/unit/document-pipeline.test.ts`) - Complete
-- **Task 3: Studio Design Tokens & Accessible UI Primitives** (`src/styles/studio.css`, `src/components/common/Button.tsx`, `src/components/common/Select.tsx`, `src/components/common/Slider.tsx`, `src/components/common/Switch.tsx`, `src/components/common/ProgressBar.tsx`, `src/components/common/Toast.tsx`, `tests/unit/ui-primitives.test.tsx`) - Complete
-- **Task 4: Upload Dropzone, File Validation & Sample Loaders** (`src/components/upload/Dropzone.tsx`, `src/components/upload/FileInfoCard.tsx`, `tests/unit/dropzone.test.tsx`) - Complete
-- **Task 5: Five Launch Themes Selector & Visual Swatches** (`src/components/studio/ThemeSelector.tsx`, `tests/unit/theme-selector.test.tsx`) - Complete
-- **Task 6: Page Setup, Typography & Layout Mode Controls Sidebar** (`src/components/studio/PageSetupControls.tsx`, `src/components/studio/LayoutModeControls.tsx`, `src/components/studio/DocumentOutline.tsx`, `src/components/studio/Sidebar.tsx`, `tests/unit/sidebar-controls.test.tsx`) - Complete
-- **Task 7: Live Preview Viewport, Zoom, Page Navigation & PDF Renderer** (`src/components/preview/ZoomControls.tsx`, `src/components/preview/PageNav.tsx`, `src/components/preview/DOMPreviewFallback.tsx`, `src/components/preview/PDFViewer.tsx`, `src/components/preview/PreviewViewport.tsx`, `tests/unit/preview-viewport.test.tsx`) - Complete
-- **Task 8: Header, Floating Toolbar, Export Modal & PDF Download Flow** (`src/components/studio/Header.tsx`, `src/components/studio/Toolbar.tsx`, `src/components/studio/ExportModal.tsx`, `tests/unit/export-flow.test.tsx`) - Complete
-- **Task 9: Responsive Studio Workspace Layout & Mobile Drawer** (`src/components/layout/StudioLayout.tsx`, `src/App.tsx`, `tests/unit/studio-layout.test.tsx`) - Complete
-- **Task 10: Full Interactive Studio UI Integration Suite & Verification** (`tests/integration/studio-ui-flow.test.tsx`) - Complete
+1. **Parser Worker Multi-Sheet Metadata (`src/workers/xlsx-parser.ts`, `src/workers/csv-parser.ts`, `src/workers/parser.worker.ts`, `src/types/cell-ir.ts`):**
+   - Implemented dynamic `getWorkbookInfo()` discovering all worksheets without hardcoding.
+   - Preserved row indices and sheet metadata across all 7 sheets of `GATE2027_Tracker_AllBranches.xlsx` (`START HERE`, `CS`, `DA`, `ECE`, `EE`, `ME`, `CE`).
+2. **Multi-Sheet Studio UI & State Navigation (`src/components/studio/Header.tsx`, `src/components/upload/FileInfoCard.tsx`, `src/components/studio/Sidebar.tsx`, `src/components/layout/StudioLayout.tsx`, `src/App.tsx`):**
+   - Mounted dynamic Sheet Selector dropdown / tabs in Header and Sidebar `FileInfoCard`.
+   - Wired one-click sheet switching in `App.tsx` triggering reactive worker re-parsing and layout generation for the selected sheet.
+3. **Section & Multi-Table Detection Engine (`src/lib/layout/section-detector.ts`, `src/lib/layout/layout-engine.ts`):**
+   - Fixed preprocessing to detect row index gaps and blank row discontinuities.
+   - Removed arbitrary 100-character title limit (properly handles 106+ character banner titles).
+   - Partitioned multi-table sheets into distinct semantic `TableSection`, `KpiGrid`, and `TextSection` blocks with individual section titles and headers.
+4. **Table Rendering & Typst Generator Wiring (`src/lib/typst/typst-generator.ts`, `src/types/typst.ts`):**
+   - Wired `repeatTableHeaders` to conditionally emit `table.header(...)` vs standard table rows.
+   - Wired `marginPreset` (`compact`: 18pt, `normal`: 36pt, `spacious`: 54pt) into `#set page(margin: ...)`.
+   - Wired `layoutMode` (`compact`, `balanced`, `presentation`, `print-saver`) into Typst cell padding, leading, and font sizing.
+5. **Dynamic Layout Re-allocation (`src/lib/layout/column-width-allocator.ts`, `src/lib/layout/layout-engine.ts`, `src/lib/pipeline/document-pipeline.ts`):**
+   - Recalculates column widths independently for each table section across available printable width.
+   - Passed `cellIR` to `recompilePDF()` so that changing page size, orientation, margins, or layout mode triggers full column re-allocation.
+6. **Preview Viewport & Navigation Wiring (`src/components/preview/PDFViewer.tsx`, `src/components/preview/PreviewViewport.tsx`):**
+   - Connected `currentPage` and `zoom` to PDF viewer iframe parameters (`#page=N&zoom=Z`).
+7. **Comprehensive End-to-End Acceptance Suite (`tests/integration/gate2027-e2e.test.ts`, `tests/integration/gate2027-studio-flow.test.tsx`):**
+   - Verified that all 7 sheets of `GATE2027_Tracker_AllBranches.xlsx` parse, segment into multiple sections, and compile to valid PDF buffers.
+   - Verified end-to-end user flow: file upload → multi-sheet UI → sheet switching → theme switching → PDF download.
 
 ### Quality Gates Status:
-- **Unit & Integration Tests:** 135 passed across 32 test files (`npm test -- --run`)
+- **Unit & Integration Tests:** 142 passed across 34 test files (`npm test -- --run`)
 - **TypeScript Typecheck:** `npx tsc --noEmit` clean (0 errors)
 - **Production Build:** `npm run build` (`tsc && vite build`) successful (0 errors, 3 worker bundles + WASM asset + studio UI)
-- **GitHub Backup:** Ready to synchronize with `git@github.com:YJHacker/Sheet-to-Art.git` master branch
+- **Primary Acceptance Fixture:** `tests/fixtures/GATE2027_Tracker_AllBranches.xlsx` (100% verified across all 7 sheets)
 
 ---
 

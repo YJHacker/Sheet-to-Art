@@ -103,6 +103,8 @@ export interface LayoutOptions {
   theme?: string;
   fontFamily?: string;
   baseFontSize?: number;
+  marginPreset?: 'compact' | 'normal' | 'spacious';
+  layoutMode?: 'auto' | 'compact' | 'balanced' | 'presentation' | 'print-saver';
 }
 
 export interface LayoutWorkerAPI {

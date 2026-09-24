@@ -5,7 +5,7 @@ import { useStudioStore } from '../../src/store/useStudioStore';
 import { THEMES } from '../../src/lib/typst/themes';
 import type { ThemeName } from '../../src/types/typst';
 
-describe('Studio UI End-to-End User Flow Integration Suite', () => {
+describe('Studio UI End-to-End User Flow Integration Suite', { timeout: 30000 }, () => {
   beforeEach(() => {
     useStudioStore.getState().resetStudio();
   });

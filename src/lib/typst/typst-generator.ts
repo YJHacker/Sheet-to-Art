@@ -29,6 +29,19 @@ function mapPaperSize(size?: PageSizeType): string {
   }
 }
 
+function resolveMargins(
+  theme: ThemeDefinition,
+  marginPreset?: 'compact' | 'normal' | 'spacious'
+): { top: string; bottom: string; left: string; right: string } {
+  if (marginPreset === 'compact') {
+    return { top: '18pt', bottom: '18pt', left: '18pt', right: '18pt' };
+  }
+  if (marginPreset === 'spacious') {
+    return { top: '54pt', bottom: '54pt', left: '54pt', right: '54pt' };
+  }
+  return theme.margins;
+}
+
 /**
  * Generates modern Typst 0.11+ source markup from a LayoutIR document model.
  */
@@ -43,6 +56,11 @@ export function generateTypstDocument(
   const isFlipped = orientation === 'landscape';
   const baseFontSize = options?.baseFontSize || layout.globalStyles.baseFontSize || theme.baseFontSize || 8.5;
   const showPageNumbers = options?.showPageNumbers !== false;
+  const repeatTableHeaders = options?.repeatTableHeaders !== false;
+  const marginPreset = options?.marginPreset;
+  const layoutMode = options?.layoutMode || 'balanced';
+  const margins = resolveMargins(theme, marginPreset);
+
   const docTitle = options?.headerTitle || layout.title || '';
   const escapedDocTitle = escapeTypst(docTitle);
 
@@ -53,7 +71,7 @@ export function generateTypstDocument(
   lines.push('#set page(');
   lines.push(`  paper: "${paper}",`);
   lines.push(`  flipped: ${isFlipped ? 'true' : 'false'},`);
-  lines.push(`  margin: (top: ${theme.margins.top}, bottom: ${theme.margins.bottom}, left: ${theme.margins.left}, right: ${theme.margins.right}),`);
+  lines.push(`  margin: (top: ${margins.top}, bottom: ${margins.bottom}, left: ${margins.left}, right: ${margins.right}),`);
 
   // Header context block (visible from page 2 onwards)
   if (docTitle || showPageNumbers) {
@@ -79,8 +97,9 @@ export function generateTypstDocument(
   lines.push('');
 
   // Global typography & paragraph styling
+  const leading = layoutMode === 'compact' ? '0.42em' : '0.55em';
   lines.push(`#set text(font: "${theme.fontFamily}", size: ${baseFontSize}pt, fill: rgb("${theme.textColor}"))`);
-  lines.push('#set par(justify: false, leading: 0.55em)');
+  lines.push(`#set par(justify: false, leading: ${leading})`);
   lines.push('');
 
   // Document Title Banner (Page 1)
@@ -90,7 +109,7 @@ export function generateTypstDocument(
     lines.push('  inset: (bottom: 6pt),');
     lines.push(`  stroke: (bottom: 1.5pt + rgb("${theme.primaryColor}")),`);
     lines.push('  [');
-    lines.push(`    #text(size: 14pt, weight: "bold", fill: rgb("${theme.primaryColor}"))[${escapedDocTitle}]`);
+    lines.push(`    #text(size: 13pt, weight: "bold", fill: rgb("${theme.primaryColor}"))[${escapedDocTitle}]`);
     lines.push('  ]');
     lines.push(')');
     lines.push('#v(6pt)');
@@ -102,13 +121,13 @@ export function generateTypstDocument(
     const section = layout.sections[sIdx] as DocumentSection;
 
     if (sIdx > 0) {
-      lines.push('#v(10pt)');
+      lines.push('#v(8pt)');
     }
 
     if (section.type === 'kpi-grid') {
       renderKpiSection(section, theme, lines);
     } else if (section.type === 'table') {
-      renderTableSection(section, theme, lines);
+      renderTableSection(section, theme, lines, repeatTableHeaders, layoutMode);
     } else if (section.type === 'text') {
       renderTextSection(section, theme, lines);
     }
@@ -129,11 +148,11 @@ function renderKpiSection(
   if (!content || !content.items || content.items.length === 0) return;
 
   if (section.title) {
-    lines.push(`#text(size: 10pt, weight: "bold", fill: rgb("${theme.textColor}"))[${escapeTypst(section.title)}]`);
-    lines.push('#v(4pt)');
+    lines.push(`#text(size: 9.5pt, weight: "bold", fill: rgb("${theme.textColor}"))[${escapeTypst(section.title)}]`);
+    lines.push('#v(3pt)');
   }
 
-  const numCols = content.columns || Math.min(content.items.length, 4) || 3;
+  const numCols = content.columns || Math.min(content.items.length, 4) || 2;
   const colSpec = Array(numCols).fill('1fr').join(', ');
 
   lines.push('#grid(');
@@ -145,12 +164,12 @@ function renderKpiSection(
     lines.push(`    fill: rgb("${theme.kpiBackground}"),`);
     lines.push(`    stroke: 0.5pt + rgb("${theme.kpiBorderColor}"),`);
     lines.push('    radius: 3pt,');
-    lines.push('    inset: (x: 8pt, y: 6pt),');
+    lines.push('    inset: (x: 8pt, y: 5pt),');
     lines.push('    width: 100%,');
     lines.push('    [');
     lines.push(`      #text(size: 7.5pt, weight: "medium", fill: rgb("${theme.secondaryColor}"))[${escapeTypst(item.label)}]`);
     lines.push('      #v(2pt)');
-    lines.push(`      #text(size: 12pt, weight: "bold", fill: rgb("${theme.kpiAccentColor}"))[${escapeTypst(item.value)}]`);
+    lines.push(`      #text(size: 11pt, weight: "bold", fill: rgb("${theme.kpiAccentColor}"))[${escapeTypst(item.value)}]`);
     if (item.change) {
       lines.push('      #v(1pt)');
       lines.push(`      #text(size: 7pt, fill: rgb("${theme.secondaryColor}"))[${escapeTypst(item.change)}]`);
@@ -168,14 +187,16 @@ function renderKpiSection(
 function renderTableSection(
   section: DocumentSection,
   theme: ThemeDefinition,
-  lines: string[]
+  lines: string[],
+  repeatHeaders: boolean = true,
+  layoutMode: string = 'balanced'
 ): void {
   const content = section.content as TableSection;
   if (!content || !content.columns || content.columns.length === 0) return;
 
   if (section.title) {
-    lines.push(`#text(size: 10pt, weight: "bold", fill: rgb("${theme.textColor}"))[${escapeTypst(section.title)}]`);
-    lines.push('#v(4pt)');
+    lines.push(`#text(size: 9.5pt, weight: "bold", fill: rgb("${theme.textColor}"))[${escapeTypst(section.title)}]`);
+    lines.push('#v(3pt)');
   }
 
   const columns = content.columns;
@@ -186,19 +207,28 @@ function renderTableSection(
 
   const alignments = columns.map(c => c.alignment || 'left').join(', ');
 
+  const cellPadX = layoutMode === 'compact' ? '3.5pt' : layoutMode === 'presentation' ? '7pt' : theme.cellPadding.x;
+  const cellPadY = layoutMode === 'compact' ? '2pt' : layoutMode === 'presentation' ? '5pt' : theme.cellPadding.y;
+
   lines.push('#table(');
   lines.push(`  columns: (${colWidths}),`);
   lines.push(`  align: (${alignments}),`);
-  lines.push(`  inset: (x: ${theme.cellPadding.x}, y: ${theme.cellPadding.y}),`);
+  lines.push(`  inset: (x: ${cellPadX}, y: ${cellPadY}),`);
   lines.push(`  stroke: (x, y) => ${theme.tableStroke},`);
   lines.push(`  fill: (col, row) => if row == 0 { rgb("${theme.headerBackground}") } else if calc.even(row) { rgb("${theme.zebraBackground}") } else { none },`);
 
-  // Table header row with table.header(...) for automatic pagination repetition
-  lines.push('  table.header(');
-  for (const col of columns) {
-    lines.push(`    [#text(weight: "bold", fill: rgb("${theme.headerTextColor}"))[${escapeTypst(col.header)}]],`);
+  // Table header row
+  if (repeatHeaders) {
+    lines.push('  table.header(');
+    for (const col of columns) {
+      lines.push(`    [#text(weight: "bold", fill: rgb("${theme.headerTextColor}"))[${escapeTypst(col.header)}]],`);
+    }
+    lines.push('  ),');
+  } else {
+    for (const col of columns) {
+      lines.push(`  table.cell(fill: rgb("${theme.headerBackground}"))[#text(weight: "bold", fill: rgb("${theme.headerTextColor}"))[${escapeTypst(col.header)}]],`);
+    }
   }
-  lines.push('  ),');
 
   // Table data rows
   for (const row of content.rows) {
@@ -237,8 +267,8 @@ function renderTextSection(
   if (!content || !content.paragraphs || content.paragraphs.length === 0) return;
 
   if (section.title) {
-    lines.push(`#text(size: 9.5pt, weight: "bold", fill: rgb("${theme.textColor}"))[${escapeTypst(section.title)}]`);
-    lines.push('#v(3pt)');
+    lines.push(`#text(size: 9pt, weight: "bold", fill: rgb("${theme.textColor}"))[${escapeTypst(section.title)}]`);
+    lines.push('#v(2pt)');
   }
 
   for (const para of content.paragraphs) {

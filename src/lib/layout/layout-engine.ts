@@ -7,30 +7,37 @@ import type {
   TableSection,
 } from '../../types/layout-ir';
 import { detectSections } from './section-detector';
-import { optimizePageGeometry } from './column-width-allocator';
+import { optimizePageGeometry, allocateColumnWidths, PAGE_DIMENSIONS } from './column-width-allocator';
 
 /**
  * Main layout analysis function that transforms CellIR into LayoutIR.
  *
  * Orchestrates the full pipeline:
  * 1. Section detection (title extraction, table/text/kpi segmentation)
- * 2. Page geometry optimization (orientation, font scaling, column widths)
+ * 2. Page geometry optimization (orientation, font scaling, column widths per table)
  * 3. Document type inference
  */
 export function analyzeCellIR(cellIR: CellIR, options: LayoutOptions = {}): LayoutIR {
   const { title, sections } = detectSections(cellIR);
 
-  // Collect all columns across table sections to determine global page geometry
-  const allTableColumns = sections
-    .filter(s => s.type === 'table')
-    .flatMap(s => (s.content as TableSection).columns);
+  // Find the widest table section to assist in global orientation detection
+  const tableSections = sections.filter(s => s.type === 'table');
+  let widestColumns = tableSections[0] ? (tableSections[0].content as TableSection).columns : [];
+  for (const s of tableSections) {
+    const cols = (s.content as TableSection).columns;
+    if (cols.length > widestColumns.length) {
+      widestColumns = cols;
+    }
+  }
 
-  const { globalStyles, optimizedColumns } = optimizePageGeometry(
-    allTableColumns.length > 0 ? allTableColumns : [],
+  const { globalStyles } = optimizePageGeometry(
+    widestColumns.length > 0 ? widestColumns : [],
     options.pageSize || 'a4',
     options.orientation || 'auto',
     options.theme || 'modern-clean',
-    options.fontFamily || 'Inter'
+    options.fontFamily || 'Inter',
+    options.marginPreset,
+    options.layoutMode
   );
 
   // Override baseFontSize if explicitly provided
@@ -38,14 +45,17 @@ export function analyzeCellIR(cellIR: CellIR, options: LayoutOptions = {}): Layo
     globalStyles.baseFontSize = options.baseFontSize;
   }
 
-  // Update table sections with optimized column widths
-  let colOffset = 0;
+  // Calculate printable width for this page geometry
+  const baseDim = PAGE_DIMENSIONS[globalStyles.pageSize] || PAGE_DIMENSIONS.a4;
+  const printableWidth = globalStyles.orientation === 'landscape'
+    ? baseDim.height - globalStyles.margins.left - globalStyles.margins.right
+    : baseDim.width - globalStyles.margins.left - globalStyles.margins.right;
+
+  // Allocate column widths for EACH table section independently to span the full page width
   for (const section of sections) {
     if (section.type === 'table') {
       const tableContent = section.content as TableSection;
-      const count = tableContent.columns.length;
-      tableContent.columns = optimizedColumns.slice(colOffset, colOffset + count);
-      colOffset += count;
+      tableContent.columns = allocateColumnWidths(tableContent.columns, printableWidth);
     }
   }
 

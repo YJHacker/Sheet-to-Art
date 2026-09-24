@@ -7,6 +7,7 @@ import { ThemeSelector } from './ThemeSelector';
 import { PageSetupControls } from './PageSetupControls';
 import { LayoutModeControls } from './LayoutModeControls';
 import { DocumentOutline } from './DocumentOutline';
+import { FileInfoCard } from '../upload/FileInfoCard';
 
 export interface SidebarProps {
   activeTab: 'theme' | 'layout' | 'outline';
@@ -14,6 +15,12 @@ export interface SidebarProps {
   options: StudioOptions;
   onOptionsChange: (updates: Partial<StudioOptions>) => void;
   layoutIR: LayoutIR | null;
+  fileName?: string;
+  fileSize?: number;
+  sheetNames?: string[];
+  activeSheetIndex?: number;
+  onSheetChange?: (index: number) => void;
+  onReset?: () => void;
   className?: string;
 }
 
@@ -23,6 +30,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
   options,
   onOptionsChange,
   layoutIR,
+  fileName = 'document.csv',
+  fileSize = 0,
+  sheetNames = [],
+  activeSheetIndex = 0,
+  onSheetChange,
+  onReset,
   className = '',
 }) => {
   const tabs: { id: 'theme' | 'layout' | 'outline'; label: string }[] = [
@@ -33,6 +46,20 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
   return (
     <aside className={`flex flex-col h-full studio-glass-panel border-r border-slate-200 bg-white/90 ${className}`}>
+      {/* File Metadata & Sheet Card */}
+      {fileName && onReset && (
+        <div className="p-3 border-b border-slate-200 bg-slate-50/50 shrink-0">
+          <FileInfoCard
+            fileName={fileName}
+            fileSize={fileSize}
+            sheetNames={sheetNames}
+            activeSheetIndex={activeSheetIndex}
+            onSheetChange={onSheetChange}
+            onReset={onReset}
+          />
+        </div>
+      )}
+
       {/* Tab Navigation */}
       <div className="flex items-center p-2 border-b border-slate-200 bg-slate-50/70 shrink-0">
         <div className="grid grid-cols-3 w-full bg-slate-200/70 p-1 rounded-lg gap-1">

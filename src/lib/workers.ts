@@ -1,6 +1,6 @@
 // src/lib/workers.ts
 import * as Comlink from 'comlink';
-import type { ParserWorkerAPI, CellIR } from '../types/cell-ir';
+import type { ParserWorkerAPI, CellIR, WorkbookInfo } from '../types/cell-ir';
 import type { LayoutWorkerAPI, LayoutOptions, LayoutIR } from '../types/layout-ir';
 import type { TypstWorkerAPI, TypstGeneratorOptions, PDFRenderResult } from '../types/typst';
 import { ParserWorker } from '../workers/parser.worker';
@@ -78,6 +78,10 @@ export function getTypstWorker(): Comlink.Remote<TypstWorkerAPI> | TypstWorkerAP
 }
 
 export const parserWorker = {
+  getWorkbookInfo: async (buffer: ArrayBuffer, fileName: string): Promise<WorkbookInfo> => {
+    const worker = getParserWorker();
+    return await worker.getWorkbookInfo(buffer, fileName);
+  },
   parseFile: async (buffer: ArrayBuffer, fileName: string, sheetIndex?: number): Promise<CellIR> => {
     const worker = getParserWorker();
     return await worker.parseFile(buffer, fileName, sheetIndex);

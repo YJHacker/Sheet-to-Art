@@ -1,7 +1,6 @@
 // src/components/upload/Dropzone.tsx
-import React, { useState, useRef } from 'react';
+import { useState, useRef } from 'react';
 import { listSampleDatasets } from '../../lib/utils/sample-data';
-import { Button } from '../common/Button';
 
 export interface DropzoneProps {
   onFileSelected: (file: File) => void;

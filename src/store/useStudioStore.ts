@@ -47,7 +47,7 @@ export const useStudioStore = create<StudioState>((set) => ({
   view: DEFAULT_VIEW_STATE,
 
   setFile: (file: UploadedFileState | null) =>
-    set((state) => ({
+    set(() => ({
       file,
       pipeline: file
         ? { stage: 'parsing', percent: 10, message: 'File uploaded, initializing pipeline...', error: null }

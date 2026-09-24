@@ -1,6 +1,5 @@
 import { describe, it, expect } from 'vitest';
 import {
-  SAMPLE_DATASETS,
   getSampleSpreadsheet,
   listSampleDatasets,
 } from '../../src/lib/utils/sample-data';

@@ -1,7 +1,7 @@
 // src/components/studio/PageSetupControls.tsx
 import React from 'react';
-import type { StudioOptions, MarginPreset } from '../../types/studio';
-import type { PageSizeType, OrientationType } from '../../types/layout-ir';
+import type { StudioOptions, MarginPreset, StudioOrientation } from '../../types/studio';
+import type { PageSizeType } from '../../types/layout-ir';
 import { Select } from '../common/Select';
 
 export interface PageSetupControlsProps {
@@ -18,7 +18,7 @@ const PAGE_SIZE_OPTIONS: { value: PageSizeType; label: string; description: stri
   { value: 'a5', label: 'A5 (148 × 210 mm)', description: 'Compact handbook & pocket summary' },
 ];
 
-const ORIENTATION_OPTIONS: { value: OrientationType; label: string; description: string }[] = [
+const ORIENTATION_OPTIONS: { value: StudioOrientation; label: string; description: string }[] = [
   { value: 'auto', label: 'Auto (Smart Heuristic)', description: 'Automatically flips to landscape if table columns require width' },
   { value: 'portrait', label: 'Portrait', description: 'Standard vertical layout' },
   { value: 'landscape', label: 'Landscape', description: 'Wide horizontal layout for wide tabular data' },
@@ -48,7 +48,7 @@ export const PageSetupControls: React.FC<PageSetupControlsProps> = ({
         label="Orientation"
         value={options.orientation}
         options={ORIENTATION_OPTIONS}
-        onChange={(val) => onOptionsChange({ orientation: val as OrientationType })}
+        onChange={(val) => onOptionsChange({ orientation: val as StudioOrientation })}
       />
 
       <Select

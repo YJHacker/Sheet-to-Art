@@ -2,42 +2,44 @@
 
 **Document Name:** `PROJECT_STATE.md`  
 **Created:** 2026-09-21  
-**Last Updated:** 2026-09-23  
+**Last Updated:** 2026-09-24  
 **Project:** Spreadsheet → Intelligent Document → Beautiful PDF Platform  
 **Repository Root:** `/root`  
 **Working Directory:** `/root`  
 **GitHub Remote:** `git@github.com:YJHacker/Sheet-to-Art.git` (synchronized)  
-**Status:** Sprint 1 (Parser & Cell IR), Sprint 2 (Layout Heuristics & Section Engine), and Sprint 3 (Typst WASM Typesetting & PDF Generation) COMPLETE. Tasks 1–8 of Sprint 3 fully implemented and verified. All 80 unit & integration tests passing across 21 test files. TypeScript strict check and production build passing. Ready for Sprint 4.
+**Status:** Sprint 1 (Parser & Cell IR), Sprint 2 (Layout Heuristics & Section Engine), Sprint 3 (Typst WASM Typesetting & PDF Generation), and Sprint 4 (Interactive Studio UI, Live Preview & 5 Themes) COMPLETE. Tasks 1–10 of Sprint 4 fully implemented and verified. All 135 unit & integration tests passing across 32 test files. TypeScript strict check and production build passing with 0 errors.
 
 ---
 
-## Sprint 3 Execution Summary (Completed)
+## Sprint 4 Execution Summary (Completed)
 
-- **Task 1: Package Dependencies & Typst Type Definitions** (`package.json`, `src/types/typst.ts`, `tests/unit/typst-types.test.ts`) - Complete
-- **Task 2: Typst Syntax Escaper & Sanitizer** (`src/lib/typst/typst-escaper.ts`, `tests/unit/typst-escaper.test.ts`) - Complete
-- **Task 3: Theme Configuration & Styling Engine (5 Themes)** (`src/lib/typst/themes.ts`, `tests/unit/typst-themes.test.ts`) - Complete
-- **Task 4: Typst Document & Section Generator** (`src/lib/typst/typst-generator.ts`, `tests/unit/typst-generator.test.ts`) - Complete
-- **Task 5: PDF Buffer Assembler & Merging with pdf-lib** (`src/lib/typst/pdf-assembler.ts`, `tests/unit/pdf-assembler.test.ts`) - Complete
-- **Task 6: Typst WASM Compiler & Engine Bridge** (`src/lib/typst/typst-compiler.ts`, `tests/unit/typst-compiler.test.ts`) - Complete
-- **Task 7: Typst Web Worker & Comlink RPC Integration** (`src/workers/typst.worker.ts`, `src/lib/workers.ts`, `tests/unit/typst-worker.test.ts`) - Complete
-- **Task 8: End-to-End Spreadsheet-to-PDF Integration Suite** (`tests/integration/pdf-generation-flow.test.ts`) - Complete
+- **Task 1: Package Dependencies, Studio Type Definitions & Zustand Store** (`src/types/studio.ts`, `src/store/useStudioStore.ts`, `tests/unit/studio-store.test.ts`) - Complete
+- **Task 2: End-to-End Document Pipeline Orchestrator & Sample Datasets** (`src/lib/pipeline/document-pipeline.ts`, `src/lib/utils/formatters.ts`, `src/lib/utils/download.ts`, `src/lib/utils/sample-data.ts`, `tests/unit/sample-data.test.ts`, `tests/unit/document-pipeline.test.ts`) - Complete
+- **Task 3: Studio Design Tokens & Accessible UI Primitives** (`src/styles/studio.css`, `src/components/common/Button.tsx`, `src/components/common/Select.tsx`, `src/components/common/Slider.tsx`, `src/components/common/Switch.tsx`, `src/components/common/ProgressBar.tsx`, `src/components/common/Toast.tsx`, `tests/unit/ui-primitives.test.tsx`) - Complete
+- **Task 4: Upload Dropzone, File Validation & Sample Loaders** (`src/components/upload/Dropzone.tsx`, `src/components/upload/FileInfoCard.tsx`, `tests/unit/dropzone.test.tsx`) - Complete
+- **Task 5: Five Launch Themes Selector & Visual Swatches** (`src/components/studio/ThemeSelector.tsx`, `tests/unit/theme-selector.test.tsx`) - Complete
+- **Task 6: Page Setup, Typography & Layout Mode Controls Sidebar** (`src/components/studio/PageSetupControls.tsx`, `src/components/studio/LayoutModeControls.tsx`, `src/components/studio/DocumentOutline.tsx`, `src/components/studio/Sidebar.tsx`, `tests/unit/sidebar-controls.test.tsx`) - Complete
+- **Task 7: Live Preview Viewport, Zoom, Page Navigation & PDF Renderer** (`src/components/preview/ZoomControls.tsx`, `src/components/preview/PageNav.tsx`, `src/components/preview/DOMPreviewFallback.tsx`, `src/components/preview/PDFViewer.tsx`, `src/components/preview/PreviewViewport.tsx`, `tests/unit/preview-viewport.test.tsx`) - Complete
+- **Task 8: Header, Floating Toolbar, Export Modal & PDF Download Flow** (`src/components/studio/Header.tsx`, `src/components/studio/Toolbar.tsx`, `src/components/studio/ExportModal.tsx`, `tests/unit/export-flow.test.tsx`) - Complete
+- **Task 9: Responsive Studio Workspace Layout & Mobile Drawer** (`src/components/layout/StudioLayout.tsx`, `src/App.tsx`, `tests/unit/studio-layout.test.tsx`) - Complete
+- **Task 10: Full Interactive Studio UI Integration Suite & Verification** (`tests/integration/studio-ui-flow.test.tsx`) - Complete
 
 ### Quality Gates Status:
-- **Unit & Integration Tests:** 80 passed across 21 test files (`npm test -- --run`)
+- **Unit & Integration Tests:** 135 passed across 32 test files (`npm test -- --run`)
 - **TypeScript Typecheck:** `npx tsc --noEmit` clean (0 errors)
-- **Production Build:** `npm run build` (`tsc && vite build`) successful (0 errors, 3 worker bundles + WASM asset)
-- **GitHub Backup:** Synchronized with `git@github.com:YJHacker/Sheet-to-Art.git` master branch
+- **Production Build:** `npm run build` (`tsc && vite build`) successful (0 errors, 3 worker bundles + WASM asset + studio UI)
+- **GitHub Backup:** Ready to synchronize with `git@github.com:YJHacker/Sheet-to-Art.git` master branch
 
 ---
 
 ## Tool & MCP Integration Audit
 
-| Integration / Tool | Available | Used in Sprints 1–3 | Role in Sprint 4 & Later |
+| Integration / Tool | Available | Used in Sprints 1–4 | Role in Sprint 5 & Later |
 |---|---|---|---|
-| **Superpowers** | Yes | Yes (Brainstorming, planning, TDD execution) | High — Sprint 4 planning, feature breakdown, and execution. |
-| **Geo SEO** | Yes | No (Headless engine sprints) | Post-MVP / Launch — Public landing page optimization and discoverability. |
+| **Superpowers** | Yes | Yes (Brainstorming, planning, TDD execution) | High — Sprint 5 advanced edge cases, multi-table layouts, and production polish. |
+| **Geo SEO** | Yes | No (Core engine & studio sprints) | Post-MVP / Launch — Public landing page optimization and discoverability. |
 | **Code Review Graph** | Yes | Partial (Automated graph indexing active) | Sprint 5 & Beyond — Impact analysis, architectural audits, and regression testing. |
-| **UI UX Pro Max** | Yes | No (Headless engine sprints) | Immediate (Sprint 4) — Interactive Studio UI, responsive preview canvas, dropzone, and 5-theme controls. |
+| **UI UX Pro Max** | Yes | Yes (Sprint 4 Studio UI design tokens, responsive layout, accessible primitives) | High — Sprint 5 UI polish, animations, and micro-interactions. |
 
 ---
 
@@ -90,6 +92,8 @@ Four parallel research tracks were executed prior to architecture specification:
    - IndexedDB caching is strictly limited to static WASM binaries, font files, and anonymized layout ratios. User spreadsheet content exists solely in transient worker memory.
 4. **Comlink RPC Standardization:**
    - All inter-worker communication is structured via typed Comlink RPC interfaces.
+5. **Memory-Safe Object URL Lifecycles:**
+   - Generated PDF Blob URLs are explicitly tracked and revoked upon re-compilation or unmount.
 
 ---
 
@@ -103,8 +107,9 @@ Four parallel research tracks were executed prior to architecture specification:
 | **Worker Bridge** | `comlink (^4.4.1)` | Type-safe RPC abstraction over Web Workers. |
 | **Typesetting & PDF** | `@myriaddreamin/typst.ts (^0.7.0)` | WASM-compiled Typst engine; sub-second compilation, native repeating table headers, pristine typography. |
 | **PDF Assembly** | `pdf-lib (^1.17.1)` | Fast in-memory PDF buffer merging, page numbering offsets, and document assembly. |
+| **State Management** | `zustand (^5.0.0)` | Lightweight reactive store with zero boilerplate and fine-grained reactivity. |
 | **UI Framework** | `React 18+` + `Tailwind CSS` + `Lucide Icons` | Declarative UI state, responsive preview controls, clean modern aesthetic. |
-| **Testing** | `Vitest` + `Playwright` | Lightning-fast unit tests for layout math + visual regression tests for PDF snapshots. |
+| **Testing** | `Vitest` + `@testing-library/react` | Lightning-fast unit tests for layout math + component interaction tests. |
 
 ---
 
@@ -130,22 +135,6 @@ Typst 0.11+ Code with Context Blocks
 Print-Ready PDF Binary (Uint8Array with %PDF- header)
 ```
 
-### 5.2 Header Heuristic Formula
-Header identification evaluates candidate rows using calibrated weights:
-$$S = 0.60B + 0.30T + 0.05F + 0.03C + 0.02U$$
-- $B$: Proportion of bold cells
-- $T$: Top row position score ($0.30$ for Row 0, $0.15$ for Row 1, $0.00$ for others)
-- $F$: Proportion of filled (non-empty) cells
-- $C$: Proportion of colored/shaded background cells
-- $U$: Proportion of string-typed cells
-
-*Rule:* Row is designated as Table Header when $S \ge 0.85$. A bold top row achieves $S \approx 0.97$.
-
-### 5.3 Column Width Allocation
-- Calculates Minimum Content Width (MCW) and Preferred Content Width (PCW).
-- Allocates proportional widths using square-root content weighting ($w_j \propto \sqrt{\text{length}_j}$) to prevent multi-line notes from crushing numeric columns.
-- Automatic page orientation flip: If table width exceeds portrait limits, automatically switch to `landscape` and elastically compress font scale down to 7.5pt before breaking.
-
 ---
 
 ## 6. PDF Generation Strategy & Themes
@@ -167,18 +156,3 @@ $$S = 0.60B + 0.30T + 0.05F + 0.03C + 0.02U$$
 - **Execution Environment:** 100% Client-Side. No spreadsheet contents or generated documents are sent to any remote server.
 - **Content Security Policy (CSP):** Strict CSP enforcing `connect-src 'self'`, `worker-src 'self' blob:`, and `script-src 'self' 'wasm-unsafe-eval'`.
 - **Sanitization:** Input escaping for all Typst markup special characters (`\`, `#`, `$`, `[`, `]`, `*`, `_`, `@`, `<`, `>`, `"`, `~`).
-
----
-
-## 8. Exact Next Steps for Sprint 4 (Resuming Tomorrow)
-
-1. **Sprint 4 Implementation Planning:**
-   - Create `docs/superpowers/plans/2026-09-24-sprint-4-interactive-studio-ui.md` using `superpowers:writing-plans`.
-2. **Interactive Studio UI Components:**
-   - Drag-and-drop file upload zone with format validation (`.xlsx`, `.csv`).
-   - Granular progress bar component connected to Comlink worker callbacks.
-   - Interactive side-by-side studio workspace with zoom, page navigation, and responsive canvas/PDF viewport.
-   - Control sidebar: Theme selector (5 themes), Page Size (`A4`, `Letter`, `Legal`, `A3`, `A5`), Orientation (`Auto`, `Portrait`, `Landscape`), Font Scale, and Title customization.
-   - One-click PDF download & export button.
-3. **State Management:**
-   - Lightweight Zustand store managing file state, layout parameters, preview URL blob, and active theme.

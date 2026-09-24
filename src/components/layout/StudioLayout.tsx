@@ -4,7 +4,6 @@ import { useStudioStore } from '../../store/useStudioStore';
 import { Header } from '../studio/Header';
 import { Toolbar } from '../studio/Toolbar';
 import { Sidebar } from '../studio/Sidebar';
-import { FileInfoCard } from '../upload/FileInfoCard';
 import { PreviewViewport } from '../preview/PreviewViewport';
 import { ExportModal } from '../studio/ExportModal';
 import { downloadPDF, printPDF } from '../../lib/utils/download';
@@ -100,7 +99,7 @@ export const StudioLayout: React.FC<StudioLayoutProps> = ({
       <ExportModal
         isOpen={isExportModalOpen}
         defaultFileName={fileName}
-        pageCount={store.pdfResult?.pageCount || store.layoutIR?.totalPagesEstimate || 1}
+        pageCount={store.pdfResult?.pageCount || 1}
         fileSize={store.pdfResult?.pdfBuffer.byteLength || fileSize}
         onClose={() => setIsExportModalOpen(false)}
         onDownload={handleDownload}

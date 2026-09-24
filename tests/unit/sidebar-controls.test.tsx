@@ -1,4 +1,3 @@
-import React from 'react';
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { PageSetupControls } from '../../src/components/studio/PageSetupControls';
@@ -22,42 +21,54 @@ const mockOptions: StudioOptions = {
 };
 
 const mockLayoutIR: LayoutIR = {
-  documentTitle: 'Quarterly Executive Summary',
-  pageSize: 'a4',
-  orientation: 'portrait',
-  totalPagesEstimate: 1,
+  documentType: 'report',
+  title: 'Quarterly Executive Summary',
+  globalStyles: {
+    pageSize: 'a4',
+    orientation: 'portrait',
+    margins: { top: 15, right: 15, bottom: 15, left: 15 },
+    fontFamily: 'Liberation Sans',
+    baseFontSize: 8.5,
+    theme: 'modern-clean',
+  },
   sections: [
     {
-      id: 'sec-kpi',
       type: 'kpi-grid',
       title: 'Key Financial Metrics',
-      startRow: 0,
-      endRow: 2,
-      rowCount: 3,
-      colCount: 4,
-      data: [],
+      content: {
+        columns: 3,
+        items: [
+          { label: 'Revenue', value: '$124.5M' },
+          { label: 'Net Income', value: '$15.6M' },
+        ],
+      },
     },
     {
-      id: 'sec-table',
       type: 'table',
       title: 'Detailed Revenue Breakdown',
-      startRow: 3,
-      endRow: 15,
-      rowCount: 13,
-      colCount: 6,
-      headers: [{ rowIndex: 3, cells: [] }],
-      columns: [],
-      rows: [],
+      content: {
+        headerStyle: { bold: true, bgColor: '#F1F5F9', textColor: '#0F172A' },
+        alternatingRows: true,
+        columns: [
+          {
+            index: 0,
+            header: 'Segment',
+            dataType: 'text',
+            alignment: 'left',
+            minWidth: 60,
+            maxWidth: 120,
+            suggestedWidth: 100,
+            stats: { nullCount: 0, uniqueValues: 3, maxLength: 8 },
+          },
+        ],
+        rows: [
+          {
+            cells: [{ value: 'Enterprise', formattedValue: 'Enterprise', alignment: 'left' }],
+          },
+        ],
+      },
     },
   ],
-  stats: {
-    totalSections: 2,
-    totalTables: 1,
-    totalKpiGrids: 1,
-    totalNotes: 0,
-    totalCells: 80,
-    analyzedAt: new Date().toISOString(),
-  },
 };
 
 describe('Sidebar & Layout Mode Controls', () => {

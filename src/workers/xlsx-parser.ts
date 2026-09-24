@@ -1,5 +1,32 @@
 import ExcelJS from 'exceljs';
-import type { CellIR, CellRow, Cell, CellStyle } from '../types/cell-ir';
+import type { CellIR, CellRow, Cell, CellStyle, WorkbookInfo, SheetInfo } from '../types/cell-ir';
+
+/**
+ * Extract workbook metadata and all worksheet names without full row extraction.
+ */
+export async function getWorkbookInfoXLSX(
+  buffer: ArrayBuffer,
+  fileName: string
+): Promise<WorkbookInfo> {
+  const workbook = new ExcelJS.Workbook();
+  await workbook.xlsx.load(buffer);
+
+  const sheets: SheetInfo[] = workbook.worksheets.map((ws, index) => ({
+    name: ws.name,
+    index,
+    rowCount: ws.actualRowCount,
+    colCount: ws.actualColumnCount,
+  }));
+
+  const sheetNames = sheets.map(s => s.name);
+
+  return {
+    fileName,
+    sheetNames,
+    sheets,
+    activeSheetIndex: 0,
+  };
+}
 
 /**
  * Parse an XLSX file buffer into Cell IR.
@@ -11,6 +38,8 @@ export async function parseXLSX(
 ): Promise<CellIR> {
   const workbook = new ExcelJS.Workbook();
   await workbook.xlsx.load(buffer);
+
+  const sheetNames = workbook.worksheets.map(ws => ws.name);
 
   const worksheet = workbook.worksheets[sheetIndex];
   if (!worksheet) {
@@ -62,6 +91,8 @@ export async function parseXLSX(
       sheetName: worksheet.name,
       totalRows: rows.length,
       totalCols: maxColCount,
+      sheetNames,
+      activeSheetIndex: sheetIndex,
     },
   };
 }

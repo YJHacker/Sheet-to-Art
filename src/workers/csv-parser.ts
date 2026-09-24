@@ -1,5 +1,21 @@
 import Papa from 'papaparse';
-import type { CellIR, CellRow, Cell } from '../types/cell-ir';
+import type { CellIR, CellRow, Cell, WorkbookInfo } from '../types/cell-ir';
+
+/**
+ * Extract workbook metadata for CSV files (always a single sheet).
+ */
+export async function getWorkbookInfoCSV(
+  _buffer: ArrayBuffer,
+  fileName: string
+): Promise<WorkbookInfo> {
+  const baseName = fileName.replace(/\.csv$/i, '') || 'Sheet1';
+  return {
+    fileName,
+    sheetNames: [baseName],
+    sheets: [{ name: baseName, index: 0 }],
+    activeSheetIndex: 0,
+  };
+}
 
 /**
  * Parse a CSV file buffer into Cell IR.
@@ -33,6 +49,7 @@ export async function parseCSV(
 function convertToCellIR(data: string[][], fileName: string): CellIR {
   const rows: CellRow[] = [];
   let maxColCount = 0;
+  const sheetName = fileName.replace(/\.csv$/i, '') || 'Sheet1';
 
   data.forEach((rowData, rowIndex) => {
     // Skip trailing completely empty lines if at the end of file
@@ -67,9 +84,11 @@ function convertToCellIR(data: string[][], fileName: string): CellIR {
     rows,
     metadata: {
       fileName,
-      sheetName: 'Sheet1', // CSV files have no sheet concept
+      sheetName,
       totalRows: rows.length,
       totalCols: maxColCount,
+      sheetNames: [sheetName],
+      activeSheetIndex: 0,
     },
   };
 }

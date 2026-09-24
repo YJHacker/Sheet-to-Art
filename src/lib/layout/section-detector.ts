@@ -12,8 +12,40 @@ import type {
 import { detectHeaderRow } from './header-detector';
 import { classifyColumn } from './column-classifier';
 
-function isRowEmpty(row: CellRow): boolean {
-  return !row.cells || row.cells.every(c => c.value === null || c.value === undefined || c.value === '' || c.type === 'empty');
+export function isRowEmpty(row: CellRow): boolean {
+  if (!row.cells || row.cells.length === 0) return true;
+  return row.cells.every(c => c.value === null || c.value === undefined || c.value === '' || c.type === 'empty');
+}
+
+function getNonEmptyCells(row: CellRow): Cell[] {
+  if (!row.cells) return [];
+  return row.cells.filter(c => c.value !== null && c.value !== undefined && String(c.value).trim() !== '' && c.type !== 'empty');
+}
+
+/**
+ * Checks if a row represents a single-value banner / section header across the grid
+ * (either a single filled cell or identical merged cell copies).
+ */
+export function isBannerRow(row: CellRow): { isBanner: boolean; text: string } {
+  const filled = getNonEmptyCells(row);
+  if (filled.length === 0) {
+    return { isBanner: false, text: '' };
+  }
+
+  // Single cell in row
+  if (filled.length === 1 && filled[0]?.value != null) {
+    const text = String(filled[0].value).trim();
+    return { isBanner: text.length > 0, text };
+  }
+
+  // All filled cells have the identical string value (common in merged header rows across columns)
+  const firstVal = String(filled[0]?.value).trim();
+  const allIdentical = filled.every(c => String(c.value).trim() === firstVal);
+  if (allIdentical && firstVal.length > 0) {
+    return { isBanner: true, text: firstVal };
+  }
+
+  return { isBanner: false, text: '' };
 }
 
 function formatCellValue(cell: Cell): string {
@@ -31,20 +63,39 @@ function formatCellValue(cell: Cell): string {
 }
 
 /**
- * Splits rows into contiguous non-empty row blocks.
+ * Splits rows into contiguous non-empty row blocks, taking into account
+ * empty rows, row index discontinuities (skipped empty rows in Excel),
+ * and embedded section banner breaks.
  */
 function partitionRowBlocks(rows: CellRow[]): CellRow[][] {
   const blocks: CellRow[][] = [];
   let currentBlock: CellRow[] = [];
+  let prevRowIndex = -1;
 
   for (const row of rows) {
-    if (isRowEmpty(row)) {
+    const isEmpty = isRowEmpty(row);
+    const hasRowGap = prevRowIndex >= 0 && row.rowIndex > prevRowIndex + 1;
+
+    if (isEmpty || hasRowGap) {
       if (currentBlock.length > 0) {
         blocks.push(currentBlock);
         currentBlock = [];
       }
-    } else {
+    }
+
+    if (!isEmpty) {
+      // If current block already has rows, and the new row is a prominent banner row,
+      // split into a new block so each table/section stands alone
+      if (currentBlock.length > 0) {
+        const { isBanner } = isBannerRow(row);
+        if (isBanner) {
+          blocks.push(currentBlock);
+          currentBlock = [];
+        }
+      }
+
       currentBlock.push(row);
+      prevRowIndex = row.rowIndex;
     }
   }
 
@@ -56,19 +107,19 @@ function partitionRowBlocks(rows: CellRow[]): CellRow[][] {
 }
 
 /**
- * Detects whether a block of rows represents a KPI grid (key-value cards).
+ * Detects whether a block of rows represents a KPI grid (key-value cards / target boxes).
  */
 function tryParseKpiGrid(block: CellRow[]): KpiGridContent | null {
   if (block.length > 3) return null;
 
-  // If the block has a detected table header row and multiple rows, it is a Table, not a KPI grid
+  // If the block has a detected multi-column table header row and multiple rows, it is a Table, not a KPI grid
   if (block.length > 1 && detectHeaderRow(block) !== null) {
     return null;
   }
 
   const items: KpiItem[] = [];
   for (const row of block) {
-    const filledCells = row.cells.filter(c => c.value !== null && c.value !== '');
+    const filledCells = getNonEmptyCells(row);
     if (filledCells.length >= 2 && filledCells.length % 2 === 0) {
       for (let i = 0; i < filledCells.length; i += 2) {
         const labelCell = filledCells[i];
@@ -98,10 +149,14 @@ function tryParseTextSection(block: CellRow[]): TextSectionContent | null {
   let isText = true;
 
   for (const row of block) {
-    const filled = row.cells.filter(c => c.value !== null && c.value !== '');
-    if (filled.length === 1 && typeof filled[0]?.value === 'string') {
-      const text = String(filled[0].value).trim();
+    const filled = getNonEmptyCells(row);
+    const { isBanner, text } = isBannerRow(row);
+
+    if (isBanner && text.length > 0) {
       paragraphs.push(text);
+    } else if (filled.length === 1 && typeof filled[0]?.value === 'string') {
+      const textVal = String(filled[0].value).trim();
+      paragraphs.push(textVal);
     } else {
       isText = false;
       break;
@@ -128,7 +183,8 @@ function buildTableSection(block: CellRow[]): TableSection {
 
   // Classify each column
   const columns = Array.from({ length: maxCols }, (_, colIdx) => {
-    const headerText = headerRow?.cells[colIdx]?.value != null ? String(headerRow.cells[colIdx]?.value) : `Col ${colIdx + 1}`;
+    const rawHeaderText = headerRow?.cells[colIdx]?.value != null ? String(headerRow.cells[colIdx]?.value).trim() : '';
+    const headerText = rawHeaderText !== '' ? rawHeaderText : `Col ${colIdx + 1}`;
     const columnCells = dataRows.map(r => r.cells[colIdx] || { value: null, type: 'empty' as const, position: { row: r.rowIndex, col: colIdx } });
     return classifyColumn(columnCells, headerText, colIdx);
   });
@@ -173,42 +229,64 @@ export function detectSections(cellIR: CellIR): { title?: string; sections: Docu
   let remainingRows = [...cellIR.rows];
 
   // Inspect first row: is it a Document Title banner?
-  const firstRow = remainingRows[0];
-  if (firstRow) {
-    const filled = firstRow.cells.filter(c => c.value !== null && c.value !== '');
-    if (filled.length === 1 && typeof filled[0]?.value === 'string') {
-      const val = String(filled[0].value).trim();
-      if (val.length > 0 && val.length <= 100) {
-        title = val;
-        remainingRows = remainingRows.slice(1);
-      }
+  if (remainingRows.length > 0) {
+    const firstRow = remainingRows[0]!;
+    const { isBanner, text } = isBannerRow(firstRow);
+    if (isBanner && text.length > 0) {
+      title = text;
+      remainingRows = remainingRows.slice(1);
     }
   }
 
-  const blocks = partitionRowBlocks(remainingRows);
+  const rawBlocks = partitionRowBlocks(remainingRows);
   const sections: DocumentSection[] = [];
 
-  for (const block of blocks) {
+  for (const block of rawBlocks) {
     if (block.length === 0) continue;
 
+    let sectionTitle: string | undefined = undefined;
+    let workingBlock = [...block];
+
+    // Check if the first row of this block is a section title banner preceding a table or content
+    if (workingBlock.length > 1) {
+      const firstInBlock = workingBlock[0]!;
+      const { isBanner, text } = isBannerRow(firstInBlock);
+      if (isBanner && text.length > 0) {
+        sectionTitle = text;
+        workingBlock = workingBlock.slice(1);
+      }
+    }
+
+    if (workingBlock.length === 0) {
+      if (sectionTitle) {
+        sections.push({
+          type: 'text',
+          title: sectionTitle,
+          content: { paragraphs: [sectionTitle] },
+        });
+      }
+      continue;
+    }
+
     // Check KPI grid
-    const kpi = tryParseKpiGrid(block);
+    const kpi = tryParseKpiGrid(workingBlock);
     if (kpi) {
-      sections.push({ type: 'kpi-grid', content: kpi });
+      sections.push({ type: 'kpi-grid', title: sectionTitle, content: kpi });
       continue;
     }
 
     // Check Text section
-    const text = tryParseTextSection(block);
+    const text = tryParseTextSection(workingBlock);
     if (text) {
-      sections.push({ type: 'text', content: text });
+      sections.push({ type: 'text', title: sectionTitle, content: text });
       continue;
     }
 
     // Default: Table section
-    const table = buildTableSection(block);
-    sections.push({ type: 'table', content: table });
+    const table = buildTableSection(workingBlock);
+    sections.push({ type: 'table', title: sectionTitle, content: table });
   }
 
   return { title, sections };
 }
+

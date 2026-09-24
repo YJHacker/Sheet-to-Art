@@ -17,6 +17,9 @@ export function mapStudioOptionsToTypstOptions(options: StudioOptions): TypstGen
     headerTitle: options.customTitle || undefined,
     repeatTableHeaders: options.repeatTableHeaders,
     showPageNumbers: options.showPageNumbers,
+    marginPreset: options.marginPreset,
+    layoutMode: options.layoutMode,
+    showSectionSummary: options.showSectionSummary,
   };
 }
 
@@ -27,6 +30,10 @@ export function mapStudioOptionsToLayoutOptions(options: StudioOptions): LayoutO
   return {
     pageSize: options.pageSize,
     orientation: options.orientation,
+    marginPreset: options.marginPreset,
+    layoutMode: options.layoutMode,
+    baseFontSize: options.fontScale,
+    theme: options.theme,
   };
 }
 
@@ -62,6 +69,7 @@ export interface PipelineExecutionResult {
 }
 
 export interface RecompileResult {
+  layoutIR: LayoutIR;
   pdfResult: PDFRenderResult;
   pdfBlobUrl: string;
 }
@@ -124,17 +132,27 @@ export async function executeDocumentPipeline(
 
 /**
  * Re-compiles an existing LayoutIR with modified options (theme, page size, font scale, title)
- * without re-parsing the original spreadsheet.
+ * and optionally re-analyzes layout from CellIR if geometry/margins changed.
  */
 export async function recompilePDF(
   layoutIR: LayoutIR,
-  options: StudioOptions
+  options: StudioOptions,
+  cellIR?: CellIR | null
 ): Promise<RecompileResult> {
+  let currentLayoutIR = layoutIR;
+
+  // If CellIR is available, re-run layout analysis to recalculate column allocations and geometry
+  if (cellIR) {
+    const layoutOpts = mapStudioOptionsToLayoutOptions(options);
+    currentLayoutIR = await layoutWorker.analyzeLayout(cellIR, layoutOpts);
+  }
+
   const typstOpts = mapStudioOptionsToTypstOptions(options);
-  const pdfResult = await typstWorker.renderLayoutToPDF(layoutIR, typstOpts);
+  const pdfResult = await typstWorker.renderLayoutToPDF(currentLayoutIR, typstOpts);
   const pdfBlobUrl = createPDFBlobUrl(pdfResult.pdfBuffer);
 
   return {
+    layoutIR: currentLayoutIR,
     pdfResult,
     pdfBlobUrl,
   };

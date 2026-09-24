@@ -41,13 +41,36 @@ export interface CellIR {
     sheetName: string;
     totalRows: number;
     totalCols: number;
+    sheetNames?: string[];
+    activeSheetIndex?: number;
   };
+}
+
+/**
+ * Workbook metadata describing all sheets in an Excel or CSV file.
+ */
+export interface SheetInfo {
+  name: string;
+  index: number;
+  rowCount?: number;
+  colCount?: number;
+}
+
+export interface WorkbookInfo {
+  fileName: string;
+  sheetNames: string[];
+  sheets: SheetInfo[];
+  activeSheetIndex: number;
 }
 
 /**
  * Parser Worker RPC API exposed via Comlink.
  */
 export interface ParserWorkerAPI {
+  getWorkbookInfo(
+    buffer: ArrayBuffer,
+    fileName: string
+  ): Promise<WorkbookInfo>;
   parseFile(
     buffer: ArrayBuffer,
     fileName: string,

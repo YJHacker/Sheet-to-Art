@@ -65,6 +65,16 @@ export function allocateColumnWidths(
   return allocated;
 }
 
+export function getMarginsForPreset(preset?: 'compact' | 'normal' | 'spacious'): PageMargins {
+  if (preset === 'compact') {
+    return { top: 18, right: 18, bottom: 18, left: 18 };
+  }
+  if (preset === 'spacious') {
+    return { top: 54, right: 54, bottom: 54, left: 54 };
+  }
+  return { ...DEFAULT_MARGINS };
+}
+
 /**
  * Determines optimal page orientation, margins, base font size, and column widths.
  */
@@ -73,10 +83,12 @@ export function optimizePageGeometry(
   preferredPageSize: PageSizeType = 'a4',
   preferredOrientation: OrientationType | 'auto' = 'auto',
   theme: string = 'modern-clean',
-  fontFamily: string = 'Inter'
+  fontFamily: string = 'Inter',
+  marginPreset?: 'compact' | 'normal' | 'spacious',
+  layoutMode?: 'auto' | 'compact' | 'balanced' | 'presentation' | 'print-saver'
 ): { globalStyles: GlobalStyles; optimizedColumns: ColumnDescriptor[] } {
   const baseDim = PAGE_DIMENSIONS[preferredPageSize] || PAGE_DIMENSIONS.a4;
-  const margins = { ...DEFAULT_MARGINS };
+  const margins = getMarginsForPreset(marginPreset);
 
   const portraitPrintableWidth = baseDim.width - margins.left - margins.right;
   const landscapePrintableWidth = baseDim.height - margins.left - margins.right;
@@ -100,9 +112,15 @@ export function optimizePageGeometry(
 
   const printableWidth = orientation === 'landscape' ? landscapePrintableWidth : portraitPrintableWidth;
 
-  // Font scaling if table exceeds printable area
+  // Base font size determination with layout mode adjustment
   let baseFontSize = 9.0;
-  if (totalMinWidth > printableWidth) {
+  if (layoutMode === 'compact') {
+    baseFontSize = 7.5;
+  } else if (layoutMode === 'presentation') {
+    baseFontSize = 10.5;
+  } else if (layoutMode === 'print-saver') {
+    baseFontSize = 8.0;
+  } else if (totalMinWidth > printableWidth) {
     const overflowRatio = printableWidth / totalMinWidth;
     baseFontSize = Math.max(7.5, Math.round(9.0 * overflowRatio * 10) / 10);
   }

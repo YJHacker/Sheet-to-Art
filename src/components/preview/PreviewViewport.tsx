@@ -85,7 +85,7 @@ export const PreviewViewport: React.FC<PreviewViewportProps> = ({
           style={{ transform: `scale(${scale})` }}
         >
           {previewMode === 'pdf' ? (
-            <PDFViewer pdfBlobUrl={pdfBlobUrl} />
+            <PDFViewer pdfBlobUrl={pdfBlobUrl} currentPage={currentPage} zoom={zoom} />
           ) : (
             <DOMPreviewFallback layoutIR={layoutIR} />
           )}

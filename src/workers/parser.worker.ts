@@ -1,9 +1,28 @@
 import * as Comlink from 'comlink';
-import { parseXLSX } from './xlsx-parser';
-import { parseCSV } from './csv-parser';
-import type { ParserWorkerAPI, CellIR } from '../types/cell-ir';
+import { parseXLSX, getWorkbookInfoXLSX } from './xlsx-parser';
+import { parseCSV, getWorkbookInfoCSV } from './csv-parser';
+import type { ParserWorkerAPI, CellIR, WorkbookInfo } from '../types/cell-ir';
 
 export class ParserWorker implements ParserWorkerAPI {
+  async getWorkbookInfo(
+    buffer: ArrayBuffer,
+    fileName: string
+  ): Promise<WorkbookInfo> {
+    const extension = this.getFileExtension(fileName);
+
+    if (extension === '.xlsx') {
+      return await getWorkbookInfoXLSX(buffer, fileName);
+    }
+
+    if (extension === '.csv') {
+      return await getWorkbookInfoCSV(buffer, fileName);
+    }
+
+    throw new Error(
+      `Unsupported file format: ${extension || 'unknown'}. Supported formats: .xlsx, .csv`
+    );
+  }
+
   async parseFile(
     buffer: ArrayBuffer,
     fileName: string,

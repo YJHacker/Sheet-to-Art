@@ -11,6 +11,9 @@ import { downloadPDF, printPDF } from '../../lib/utils/download';
 export interface StudioLayoutProps {
   fileName?: string;
   fileSize?: number;
+  sheetNames?: string[];
+  activeSheetIndex?: number;
+  onSheetChange?: (index: number) => void;
   onExportClick?: () => void;
   onReset?: () => void;
   isRecompiling?: boolean;
@@ -20,6 +23,9 @@ export interface StudioLayoutProps {
 export const StudioLayout: React.FC<StudioLayoutProps> = ({
   fileName = 'document.csv',
   fileSize = 0,
+  sheetNames = [],
+  activeSheetIndex = 0,
+  onSheetChange,
   onExportClick,
   onReset,
   isRecompiling = false,
@@ -51,6 +57,9 @@ export const StudioLayout: React.FC<StudioLayoutProps> = ({
       <Header
         hasDocument={true}
         fileName={fileName}
+        sheetNames={sheetNames.length > 0 ? sheetNames : store.file?.sheetNames || []}
+        activeSheetIndex={activeSheetIndex}
+        onSheetChange={onSheetChange}
         onExportClick={handleExportClick}
         onReset={onReset || store.resetStudio}
       />
@@ -69,6 +78,12 @@ export const StudioLayout: React.FC<StudioLayoutProps> = ({
             options={store.options}
             onOptionsChange={store.setOptions}
             layoutIR={store.layoutIR}
+            fileName={fileName}
+            fileSize={fileSize}
+            sheetNames={sheetNames.length > 0 ? sheetNames : store.file?.sheetNames || []}
+            activeSheetIndex={activeSheetIndex}
+            onSheetChange={onSheetChange}
+            onReset={onReset || store.resetStudio}
             className="w-full h-full"
           />
         </div>

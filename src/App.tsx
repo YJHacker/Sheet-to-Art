@@ -37,13 +37,6 @@ export default function App() {
 
   const handleProcessBuffer = async (buffer: ArrayBuffer, fileName: string, sheetIndex: number = 0) => {
     setErrorToast(null);
-    store.setFile({
-      name: fileName,
-      size: buffer.byteLength,
-      buffer,
-      sheetNames: [],
-      activeSheetIndex: sheetIndex,
-    });
 
     try {
       const result = await executeDocumentPipeline(
@@ -55,6 +48,16 @@ export default function App() {
           store.setPipelineProgress(progress);
         }
       );
+
+      const sheetNames = result.cellIR.metadata.sheetNames || [result.cellIR.metadata.sheetName || 'Sheet1'];
+
+      store.setFile({
+        name: fileName,
+        size: buffer.byteLength,
+        buffer,
+        sheetNames,
+        activeSheetIndex: sheetIndex,
+      });
 
       store.setDocumentData({
         cellIR: result.cellIR,
@@ -78,9 +81,24 @@ export default function App() {
     }
   };
 
+  const handleSheetChange = async (sheetIndex: number) => {
+    if (!store.file || !store.file.buffer) return;
+    await handleProcessBuffer(store.file.buffer, store.file.name, sheetIndex);
+  };
+
   const handleFileSelected = async (file: File) => {
     try {
-      const buffer = await file.arrayBuffer();
+      let buffer: ArrayBuffer;
+      if (typeof file.arrayBuffer === 'function') {
+        buffer = await file.arrayBuffer();
+      } else {
+        buffer = await new Promise<ArrayBuffer>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result as ArrayBuffer);
+          reader.onerror = () => reject(new Error('Failed to read file via FileReader'));
+          reader.readAsArrayBuffer(file);
+        });
+      }
       await handleProcessBuffer(buffer, file.name, 0);
     } catch (err: any) {
       setErrorToast(err?.message || 'Failed to read file buffer.');
@@ -117,8 +135,9 @@ export default function App() {
     debounceTimerRef.current = setTimeout(async () => {
       setIsRecompiling(true);
       try {
-        const recompiled = await recompilePDF(store.layoutIR!, store.options);
+        const recompiled = await recompilePDF(store.layoutIR!, store.options, store.cellIR);
         store.setDocumentData({
+          layoutIR: recompiled.layoutIR,
           pdfResult: recompiled.pdfResult,
           pdfBlobUrl: recompiled.pdfBlobUrl,
         });
@@ -150,6 +169,9 @@ export default function App() {
       <StudioLayout
         fileName={store.file?.name}
         fileSize={store.file?.size}
+        sheetNames={store.file?.sheetNames || []}
+        activeSheetIndex={store.file?.activeSheetIndex || 0}
+        onSheetChange={handleSheetChange}
         isRecompiling={isRecompiling}
         onReset={store.resetStudio}
       />

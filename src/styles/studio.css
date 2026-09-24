@@ -1,0 +1,60 @@
+/* src/styles/studio.css - Studio Glassmorphism & UI Tokens */
+
+:root {
+  --studio-bg: #f8fafc;
+  --studio-card-bg: rgba(255, 255, 255, 0.85);
+  --studio-card-border: rgba(226, 232, 240, 0.8);
+  --studio-glass-blur: 16px;
+  --studio-text-primary: #0f172a;
+  --studio-text-secondary: #475569;
+  --studio-text-muted: #94a3b8;
+  --studio-primary: #2563eb;
+  --studio-primary-hover: #1d4ed8;
+  --studio-primary-light: #eff6ff;
+  --studio-accent: #059669;
+  --studio-danger: #dc2626;
+  --studio-shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --studio-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -1px rgba(0, 0, 0, 0.04);
+  --studio-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.04);
+  --studio-shadow-canvas: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+.studio-glass-panel {
+  background: var(--studio-card-bg);
+  backdrop-filter: blur(var(--studio-glass-blur));
+  -webkit-backdrop-filter: blur(var(--studio-glass-blur));
+  border: 1px solid var(--studio-card-border);
+  box-shadow: var(--studio-shadow-sm);
+}
+
+.studio-canvas-grid {
+  background-color: #f1f5f9;
+  background-image: radial-gradient(#cbd5e1 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+/* Custom scrollbars for sidebars and preview */
+.studio-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.studio-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.studio-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.5);
+  border-radius: 9999px;
+}
+.studio-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(100, 116, 139, 0.7);
+}
+
+/* Animations */
+@keyframes studio-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.85; transform: scale(0.98); }
+}
+
+.animate-studio-pulse {
+  animation: studio-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}

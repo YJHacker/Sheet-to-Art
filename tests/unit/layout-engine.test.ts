@@ -1,7 +1,10 @@
 // tests/unit/layout-engine.test.ts
 import { describe, it, expect } from 'vitest';
+import * as fs from 'fs';
+import * as path from 'path';
 import type { CellIR } from '../../src/types/cell-ir';
 import { analyzeCellIR } from '../../src/lib/layout/layout-engine';
+import { parseXLSX } from '../../src/workers/xlsx-parser';
 import type { TableSection } from '../../src/types/layout-ir';
 
 describe('Layout Engine Orchestrator', () => {
@@ -48,5 +51,32 @@ describe('Layout Engine Orchestrator', () => {
     expect(table.columns[2]!.dataType).toBe('number');
     expect(table.columns[2]!.alignment).toBe('right');
     expect(table.columns[2]!.suggestedWidth).toBeGreaterThanOrEqual(table.columns[2]!.minWidth);
+  });
+
+  describe('GATE 2027 Real Workbook Layout Analysis', () => {
+    const filePath = path.resolve('tests/fixtures/GATE2027_Tracker_AllBranches.xlsx');
+    const fileBuffer = fs.readFileSync(filePath);
+    const arrayBuffer = fileBuffer.buffer.slice(
+      fileBuffer.byteOffset,
+      fileBuffer.byteOffset + fileBuffer.byteLength
+    );
+
+    it('should analyze real GATE 2027 START HERE sheet into report LayoutIR', async () => {
+      const cellIR = await parseXLSX(arrayBuffer, 'GATE2027_Tracker_AllBranches.xlsx', 0);
+      const layout = analyzeCellIR(cellIR, { pageSize: 'a4', orientation: 'auto' });
+
+      expect(layout.documentType).toBe('report');
+      expect(layout.globalStyles.orientation).toBe('landscape');
+      expect(layout.sections).toHaveLength(9);
+    });
+
+    it('should analyze real GATE 2027 DA sheet into multi-section LayoutIR', async () => {
+      const cellIR = await parseXLSX(arrayBuffer, 'GATE2027_Tracker_AllBranches.xlsx', 2);
+      const layout = analyzeCellIR(cellIR, { pageSize: 'a4', orientation: 'auto' });
+
+      expect(layout.documentType).toBe('report');
+      expect(layout.title).toContain('GATE 2027 · DA');
+      expect(layout.sections).toHaveLength(16);
+    });
   });
 });

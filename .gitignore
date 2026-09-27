@@ -47,9 +47,13 @@ target/
 .ssh/
 architectural-spec.md
 
-# Testing
+# Testing & Rendered PDF Artifacts
 coverage/
 .nyc_output/
+generated_pdfs/
+rendered_opt_images/
+rendered_pages/
+rendered_pdf_images/
 
 # Temporary files
 *.tmp

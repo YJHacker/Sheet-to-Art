@@ -1,7 +1,10 @@
 // tests/unit/section-detector.test.ts
 import { describe, it, expect } from 'vitest';
+import * as fs from 'fs';
+import * as path from 'path';
 import type { CellIR } from '../../src/types/cell-ir';
 import { detectSections } from '../../src/lib/layout/section-detector';
+import { parseXLSX } from '../../src/workers/xlsx-parser';
 import type { TableSection, TextSectionContent, KpiGridContent } from '../../src/types/layout-ir';
 
 describe('Section Detector & Boundary Segmentation', () => {
@@ -123,5 +126,44 @@ describe('Section Detector & Boundary Segmentation', () => {
     expect(kpiContent.items).toHaveLength(2);
     expect(kpiContent.items[0]!.label).toBe('Total Revenue');
     expect(kpiContent.items[0]!.value).toBe('$1.2M');
+  });
+
+  describe('GATE 2027 Real Workbook Section Detection', () => {
+    const filePath = path.resolve('tests/fixtures/GATE2027_Tracker_AllBranches.xlsx');
+    const fileBuffer = fs.readFileSync(filePath);
+    const arrayBuffer = fileBuffer.buffer.slice(
+      fileBuffer.byteOffset,
+      fileBuffer.byteOffset + fileBuffer.byteLength
+    );
+
+    it('should detect all 9 sections on real START HERE sheet', async () => {
+      const cellIR = await parseXLSX(arrayBuffer, 'GATE2027_Tracker_AllBranches.xlsx', 0);
+      const result = detectSections(cellIR);
+
+      expect(result.title).toContain('GATE 2027');
+      expect(result.sections).toHaveLength(9);
+
+      // Verify sections sequence: text callout -> 7 tables -> closing text note
+      expect(result.sections[0]!.type).toBe('text');
+      for (let i = 1; i <= 7; i++) {
+        expect(result.sections[i]!.type).toBe('table');
+      }
+      expect(result.sections[8]!.type).toBe('text');
+    });
+
+    it('should detect all 16 sections on real CS sheet', async () => {
+      const cellIR = await parseXLSX(arrayBuffer, 'GATE2027_Tracker_AllBranches.xlsx', 1);
+      const result = detectSections(cellIR);
+
+      expect(result.title).toContain('GATE 2027 · CS');
+      expect(result.sections).toHaveLength(16);
+
+      // Section 1: KPI grid
+      expect(result.sections[1]!.type).toBe('kpi-grid');
+      // Section 2: Marks Map table
+      expect(result.sections[2]!.type).toBe('table');
+      // Section 15: Checkpoint KPIs
+      expect(result.sections[15]!.type).toBe('kpi-grid');
+    });
   });
 });

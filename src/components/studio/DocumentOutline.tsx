@@ -12,7 +12,7 @@ export const DocumentOutline: React.FC<DocumentOutlineProps> = ({
 }) => {
   if (!layoutIR || !layoutIR.sections || layoutIR.sections.length === 0) {
     return (
-      <div className={`p-6 text-center text-slate-400 text-sm ${className}`}>
+      <div className={`p-6 text-center text-slate-500 text-sm ${className}`}>
         No document structure detected yet.
       </div>
     );
@@ -27,7 +27,7 @@ export const DocumentOutline: React.FC<DocumentOutlineProps> = ({
         const rowCount = tbl.rows?.length || 0;
         return {
           title,
-          badge: { label: 'Table', style: 'bg-blue-50 text-blue-700 border-blue-200' },
+          badge: { label: 'Table', style: 'bg-blue-50 text-blue-800 border-blue-200' },
           detail: `${rowCount} rows, ${colCount} columns`,
         };
       }
@@ -36,7 +36,7 @@ export const DocumentOutline: React.FC<DocumentOutlineProps> = ({
         const itemCount = kpi.items?.length || 0;
         return {
           title,
-          badge: { label: 'KPI Grid', style: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
+          badge: { label: 'KPI Grid', style: 'bg-emerald-50 text-emerald-800 border-emerald-200' },
           detail: `${itemCount} key metrics`,
         };
       }
@@ -46,7 +46,7 @@ export const DocumentOutline: React.FC<DocumentOutlineProps> = ({
         const pCount = text.paragraphs?.length || 0;
         return {
           title,
-          badge: { label: 'Text Note', style: 'bg-amber-50 text-amber-700 border-amber-200' },
+          badge: { label: 'Text Note', style: 'bg-amber-50 text-amber-800 border-amber-200' },
           detail: `${pCount} paragraphs`,
         };
       }
@@ -60,11 +60,11 @@ export const DocumentOutline: React.FC<DocumentOutlineProps> = ({
   return (
     <div className={`flex flex-col gap-3 ${className}`}>
       {/* Header Summary */}
-      <div className="flex items-center justify-between pb-2 border-b border-slate-100">
-        <span className="text-xs font-semibold uppercase tracking-wider text-slate-600">
+      <div className="flex items-center justify-between pb-2 border-b border-slate-200/80">
+        <span className="text-xs font-bold uppercase tracking-wider text-slate-700">
           Semantic Structure
         </span>
-        <span className="text-xs font-medium text-slate-500">
+        <span className="text-xs font-semibold text-slate-600">
           {layoutIR.sections.length} Sections Detected
         </span>
       </div>
@@ -77,15 +77,15 @@ export const DocumentOutline: React.FC<DocumentOutlineProps> = ({
           return (
             <div
               key={idx}
-              className="flex items-start justify-between gap-2 p-3 rounded-xl border border-slate-200 bg-white/70 shadow-xs"
+              className="flex items-start justify-between gap-2 p-3 rounded-xl border border-slate-200 bg-white shadow-xs"
             >
               <div className="flex flex-col min-w-0">
-                <span className="text-sm font-semibold text-slate-800 truncate" title={info.title}>
+                <span className="text-sm font-bold text-slate-900 truncate" title={info.title}>
                   {info.title}
                 </span>
-                <span className="text-xs text-slate-400">{info.detail}</span>
+                <span className="text-xs text-slate-500 font-medium">{info.detail}</span>
               </div>
-              <span className={`text-[10px] font-semibold px-2 py-0.5 rounded border uppercase shrink-0 ${info.badge.style}`}>
+              <span className={`text-[10px] font-bold px-2 py-0.5 rounded border uppercase shrink-0 ${info.badge.style}`}>
                 {info.badge.label}
               </span>
             </div>
@@ -94,11 +94,12 @@ export const DocumentOutline: React.FC<DocumentOutlineProps> = ({
       </div>
 
       {/* Document Stats Footer */}
-      <div className="mt-2 p-3 rounded-lg bg-slate-50 border border-slate-200/80 flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-500">
-        <span>Tables: <strong className="text-slate-700">{tableCount}</strong></span>
-        <span>KPI Grids: <strong className="text-slate-700">{kpiCount}</strong></span>
-        <span>Notes: <strong className="text-slate-700">{textCount}</strong></span>
+      <div className="mt-2 p-3 rounded-lg bg-slate-50 border border-slate-200/80 flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-600 font-medium">
+        <span>Tables: <strong className="text-slate-900">{tableCount}</strong></span>
+        <span>KPI Grids: <strong className="text-slate-900">{kpiCount}</strong></span>
+        <span>Notes: <strong className="text-slate-900">{textCount}</strong></span>
       </div>
     </div>
   );
 };
+

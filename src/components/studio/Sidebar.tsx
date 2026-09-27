@@ -20,6 +20,7 @@ export interface SidebarProps {
   sheetNames?: string[];
   activeSheetIndex?: number;
   onSheetChange?: (index: number) => void;
+  onOpenFile?: (file: File) => void;
   onReset?: () => void;
   className?: string;
 }
@@ -35,6 +36,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   sheetNames = [],
   activeSheetIndex = 0,
   onSheetChange,
+  onOpenFile,
   onReset,
   className = '',
 }) => {
@@ -45,24 +47,25 @@ export const Sidebar: React.FC<SidebarProps> = ({
   ];
 
   return (
-    <aside className={`flex flex-col h-full studio-glass-panel border-r border-slate-200 bg-white/90 ${className}`}>
-      {/* File Metadata & Sheet Card */}
+    <aside className={`flex flex-col h-full studio-glass-panel border-r border-slate-200/90 bg-white/95 ${className}`}>
+      {/* File Metadata Card */}
       {fileName && onReset && (
-        <div className="p-3 border-b border-slate-200 bg-slate-50/50 shrink-0">
+        <div className="p-3 border-b border-slate-200/80 bg-slate-50/50 shrink-0">
           <FileInfoCard
             fileName={fileName}
             fileSize={fileSize}
             sheetNames={sheetNames}
             activeSheetIndex={activeSheetIndex}
             onSheetChange={onSheetChange}
+            onOpenFile={onOpenFile}
             onReset={onReset}
           />
         </div>
       )}
 
       {/* Tab Navigation */}
-      <div className="flex items-center p-2 border-b border-slate-200 bg-slate-50/70 shrink-0">
-        <div className="grid grid-cols-3 w-full bg-slate-200/70 p-1 rounded-lg gap-1">
+      <div className="flex items-center p-2.5 border-b border-slate-200/80 bg-slate-50/70 shrink-0">
+        <div className="grid grid-cols-3 w-full bg-slate-200/80 p-1 rounded-xl gap-1" role="tablist">
           {tabs.map((tab) => {
             const isActive = activeTab === tab.id;
             return (
@@ -72,9 +75,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 role="tab"
                 aria-selected={isActive}
                 onClick={() => onTabChange(tab.id)}
-                className={`text-xs font-semibold py-1.5 px-2 rounded-md transition-all duration-150 text-center truncate cursor-pointer ${
+                className={`text-xs font-bold py-2 px-2 rounded-lg transition-all duration-150 text-center truncate cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${
                   isActive
-                    ? 'bg-white text-slate-800 shadow-xs'
+                    ? 'bg-white text-slate-900 shadow-xs'
                     : 'text-slate-600 hover:text-slate-900 hover:bg-white/40'
                 }`}
               >
@@ -100,7 +103,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               options={options}
               onOptionsChange={onOptionsChange}
             />
-            <div className="h-px bg-slate-200" />
+            <div className="h-px bg-slate-200/80" />
             <LayoutModeControls
               options={options}
               onOptionsChange={onOptionsChange}
@@ -115,3 +118,5 @@ export const Sidebar: React.FC<SidebarProps> = ({
     </aside>
   );
 };
+
+

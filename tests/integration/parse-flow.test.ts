@@ -54,4 +54,32 @@ describe('End-to-End Parse Flow', () => {
     expect(result.metadata.totalCols).toBe(10);
     expect(endTime - startTime).toBeLessThan(2000); // Should complete in < 2 seconds
   });
+
+  describe('GATE 2027 Real Workbook Parse Flow', () => {
+    const gateBuffer = readFileSync('tests/fixtures/GATE2027_Tracker_AllBranches.xlsx');
+    const gateArrayBuffer = gateBuffer.buffer.slice(
+      gateBuffer.byteOffset,
+      gateBuffer.byteOffset + gateBuffer.byteLength
+    );
+
+    it('should extract workbook info with all 7 sheets from real GATE workbook', async () => {
+      const info = await worker.getWorkbookInfo(gateArrayBuffer, 'GATE2027_Tracker_AllBranches.xlsx');
+      expect(info.sheetNames).toEqual(['START HERE', 'CS', 'DA', 'ECE', 'EE', 'ME', 'CE']);
+      expect(info.sheets).toHaveLength(7);
+      expect(info.sheets[0]!.name).toBe('START HERE');
+      expect(info.sheets[1]!.name).toBe('CS');
+    });
+
+    it('should parse each sheet with accurate dimensions and styles', async () => {
+      const sheet0 = await worker.parseFile(gateArrayBuffer, 'GATE2027_Tracker_AllBranches.xlsx', 0);
+      expect(sheet0.metadata.sheetName).toBe('START HERE');
+      expect(sheet0.metadata.totalRows).toBe(57);
+      expect(sheet0.metadata.totalCols).toBe(5);
+
+      const sheet1 = await worker.parseFile(gateArrayBuffer, 'GATE2027_Tracker_AllBranches.xlsx', 1);
+      expect(sheet1.metadata.sheetName).toBe('CS');
+      expect(sheet1.metadata.totalRows).toBe(138);
+      expect(sheet1.metadata.totalCols).toBe(5);
+    });
+  });
 });

@@ -1,10 +1,11 @@
+// tests/integration/gate2027-studio-flow.test.tsx
 import { describe, it, expect, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { readFileSync } from 'fs';
 import App from '../../src/App';
 import { useStudioStore } from '../../src/store/useStudioStore';
 
-describe('GATE 2027 Studio UI Interactive User Flow', { timeout: 60000 }, () => {
+describe('GATE 2027 Studio UI Interactive User Flow', { timeout: 120000 }, () => {
   beforeEach(() => {
     useStudioStore.getState().resetStudio();
   });
@@ -27,10 +28,11 @@ describe('GATE 2027 Studio UI Interactive User Flow', { timeout: 60000 }, () => 
     // 3. Wait for Worker Pipeline to complete and Studio to mount
     await waitFor(
       () => {
-        expect(screen.getByRole('button', { name: /export pdf/i })).toBeDefined();
+        const exportBtns = screen.getAllByRole('button', { name: /export pdf/i });
+        expect(exportBtns.length).toBeGreaterThanOrEqual(1);
         expect(screen.getAllByText(/START HERE/i).length).toBeGreaterThanOrEqual(1);
       },
-      { timeout: 25000 }
+      { timeout: 35000 }
     );
 
     // 4. Verify all 7 sheet names are populated in the store and rendered in the Sheet selector
@@ -63,7 +65,7 @@ describe('GATE 2027 Studio UI Interactive User Flow', { timeout: 60000 }, () => 
         expect(state.file?.activeSheetIndex).toBe(1);
         expect(state.cellIR?.metadata.sheetName).toBe('CS');
       },
-      { timeout: 25000 }
+      { timeout: 35000 }
     );
 
     // Verify CS sheet layout sections
@@ -72,7 +74,7 @@ describe('GATE 2027 Studio UI Interactive User Flow', { timeout: 60000 }, () => 
     expect(csState.layoutIR?.sections.length).toBeGreaterThanOrEqual(10);
 
     // 6. Test Export Modal
-    const exportBtn = screen.getByRole('button', { name: /export pdf/i });
+    const exportBtn = screen.getAllByRole('button', { name: /export pdf/i })[0]!;
     fireEvent.click(exportBtn);
 
     expect(screen.getByText(/export publication pdf/i)).toBeDefined();

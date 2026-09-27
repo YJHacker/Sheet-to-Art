@@ -56,4 +56,29 @@ describe('Layout Flow Integration Tests', () => {
     expect(table.columns[0]!.alignment).toBe('left');
     expect(table.columns[1]!.alignment).toBe('right');
   });
+
+  describe('GATE 2027 Real Workbook Layout Flow Integration', () => {
+    const filePath = path.resolve(__dirname, '../fixtures/GATE2027_Tracker_AllBranches.xlsx');
+    const buffer = fs.readFileSync(filePath);
+    const arrayBuffer = buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength);
+
+    it('should parse and construct multi-section LayoutIR for START HERE sheet', async () => {
+      const cellIR = await parserWorker.parseFile(arrayBuffer, 'GATE2027_Tracker_AllBranches.xlsx', 0);
+      const layoutIR = await layoutWorker.analyzeLayout(cellIR, { pageSize: 'a4', orientation: 'auto' });
+
+      expect(layoutIR.documentType).toBe('report');
+      expect(layoutIR.globalStyles.orientation).toBe('landscape');
+      expect(layoutIR.sections).toHaveLength(9);
+    });
+
+    it('should parse and construct multi-section LayoutIR for all branch sheets', async () => {
+      for (let sIdx = 1; sIdx <= 6; sIdx++) {
+        const cellIR = await parserWorker.parseFile(arrayBuffer, 'GATE2027_Tracker_AllBranches.xlsx', sIdx);
+        const layoutIR = await layoutWorker.analyzeLayout(cellIR, { pageSize: 'a4', orientation: 'auto' });
+
+        expect(layoutIR.documentType).toBe('report');
+        expect(layoutIR.sections).toHaveLength(16);
+      }
+    }, 45000);
+  });
 });

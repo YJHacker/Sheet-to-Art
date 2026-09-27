@@ -1,39 +1,44 @@
-/* src/styles/studio.css - Studio Glassmorphism & UI Tokens */
+/* src/styles/studio.css - UI UX Pro Max Swiss-Minimalist Studio Design System */
 
 :root {
   --studio-bg: #f8fafc;
-  --studio-card-bg: rgba(255, 255, 255, 0.85);
-  --studio-card-border: rgba(226, 232, 240, 0.8);
-  --studio-glass-blur: 16px;
+  --studio-card-bg: rgba(255, 255, 255, 0.96);
+  --studio-card-border: #e2e8f0;
   --studio-text-primary: #0f172a;
   --studio-text-secondary: #475569;
-  --studio-text-muted: #94a3b8;
+  --studio-text-muted: #64748b;
   --studio-primary: #2563eb;
   --studio-primary-hover: #1d4ed8;
   --studio-primary-light: #eff6ff;
   --studio-accent: #059669;
   --studio-danger: #dc2626;
-  --studio-shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --studio-shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --studio-shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.08), 0 1px 2px 0 rgba(0, 0, 0, 0.04);
   --studio-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -1px rgba(0, 0, 0, 0.04);
   --studio-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.04);
-  --studio-shadow-canvas: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  --studio-shadow-canvas: 0 20px 25px -5px rgba(15, 23, 42, 0.08), 0 10px 10px -5px rgba(15, 23, 42, 0.03);
 }
 
+/* Glassmorphism Panel Primitives */
 .studio-glass-panel {
   background: var(--studio-card-bg);
-  backdrop-filter: blur(var(--studio-glass-blur));
-  -webkit-backdrop-filter: blur(var(--studio-glass-blur));
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   border: 1px solid var(--studio-card-border);
-  box-shadow: var(--studio-shadow-sm);
+  box-shadow: var(--studio-shadow-xs);
 }
 
+/* Canvas Grid Pattern */
 .studio-canvas-grid {
   background-color: #f1f5f9;
-  background-image: radial-gradient(#cbd5e1 1px, transparent 1px);
-  background-size: 20px 20px;
+  background-image: radial-gradient(#cbd5e1 1.2px, transparent 1.2px);
+  background-size: 24px 24px;
 }
 
-/* Custom scrollbars for sidebars and preview */
+/* Custom Ergonomic Scrollbars */
+.studio-scrollbar {
+  -webkit-overflow-scrolling: touch;
+}
 .studio-scrollbar::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -46,15 +51,92 @@
   border-radius: 9999px;
 }
 .studio-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: rgba(100, 116, 139, 0.7);
+  background: rgba(100, 116, 139, 0.8);
 }
 
-/* Animations */
-@keyframes studio-pulse {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.85; transform: scale(0.98); }
+/* Typst Vector SVG Text Glyph Rendering Rules */
+.typst-doc,
+svg.typst-doc,
+.typst-svg-container {
+  --glyph_fill: inherit;
+  --glyph_stroke: none;
 }
 
-.animate-studio-pulse {
-  animation: studio-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+.typst-doc .outline_glyph,
+.typst-doc path.outline_glyph,
+.typst-svg-container .outline_glyph,
+.typst-svg-container path.outline_glyph,
+svg.typst-doc path.outline_glyph,
+.typst-svg-page path.outline_glyph,
+path.outline_glyph {
+  fill: var(--glyph_fill, inherit) !important;
+  stroke: var(--glyph_stroke, none) !important;
 }
+
+/* SVG Rendering Container & Multi-Page Viewport Styles */
+.typst-svg-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  width: 100%;
+  max-width: 100%;
+}
+
+.typst-svg-container svg {
+  display: block;
+  max-width: 100%;
+  width: auto;
+  height: auto;
+  margin: 0 auto;
+  background: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 10px 15px -3px rgba(15, 23, 42, 0.08), 0 4px 6px -2px rgba(15, 23, 42, 0.04);
+}
+
+/* Slide in and Fade animations */
+@keyframes studio-fade-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes studio-slide-down {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes studio-pulse-subtle {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+.animate-fade-in {
+  animation: studio-fade-in 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-slide-down {
+  animation: studio-slide-down 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-pulse-subtle {
+  animation: studio-pulse-subtle 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Active worksheet tab highlight */
+.worksheet-tab-active {
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  color: #ffffff;
+  box-shadow: 0 2px 4px -1px rgba(37, 99, 235, 0.35);
+}
+
+/* Mobile Touch & Layout Optimizations */
+@media (max-width: 767px) {
+  .typst-svg-container {
+    gap: 12px;
+  }
+  .typst-svg-container svg {
+    border-radius: 6px;
+    box-shadow: 0 4px 6px -1px rgba(15, 23, 42, 0.08);
+  }
+}
+

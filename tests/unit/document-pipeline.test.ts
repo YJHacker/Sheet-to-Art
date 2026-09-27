@@ -1,4 +1,6 @@
 import { describe, it, expect } from 'vitest';
+import * as fs from 'fs';
+import * as path from 'path';
 import {
   executeDocumentPipeline,
   recompilePDF,
@@ -39,7 +41,7 @@ describe('Formatters Utility', () => {
   });
 });
 
-describe('Document Pipeline Orchestrator', () => {
+describe('Document Pipeline Orchestrator', { timeout: 30000 }, () => {
   it('mapStudioOptionsToTypstOptions maps StudioOptions to TypstGeneratorOptions', () => {
     const typstOpts = mapStudioOptionsToTypstOptions({
       ...defaultOptions,
@@ -111,6 +113,49 @@ describe('Document Pipeline Orchestrator', () => {
     expect(recompiled.pdfResult).toBeDefined();
     expect(recompiled.pdfResult.pdfBuffer).toBeInstanceOf(Uint8Array);
     expect(recompiled.pdfBlobUrl).toBeDefined();
+  });
+
+  describe('GATE 2027 Real Workbook Pipeline Execution', () => {
+    const filePath = path.resolve('tests/fixtures/GATE2027_Tracker_AllBranches.xlsx');
+    const fileBuffer = fs.readFileSync(filePath);
+    const arrayBuffer = fileBuffer.buffer.slice(
+      fileBuffer.byteOffset,
+      fileBuffer.byteOffset + fileBuffer.byteLength
+    );
+
+    it('should execute full document pipeline on real GATE 2027 workbook sheet 0', async () => {
+      const result = await executeDocumentPipeline(
+        arrayBuffer,
+        'GATE2027_Tracker_AllBranches.xlsx',
+        0,
+        defaultOptions
+      );
+
+      expect(result.cellIR).toBeDefined();
+      expect(result.cellIR.metadata.sheetName).toBe('START HERE');
+      expect(result.layoutIR).toBeDefined();
+      expect(result.layoutIR.sections).toHaveLength(9);
+      expect(result.pdfResult).toBeDefined();
+      expect(result.pdfResult.pageCount).toBe(2);
+      expect(result.pdfResult.pdfBuffer.length).toBeGreaterThan(50000);
+    }, 45000);
+
+    it('should execute full document pipeline on real GATE 2027 workbook sheet 1 (CS)', async () => {
+      const result = await executeDocumentPipeline(
+        arrayBuffer,
+        'GATE2027_Tracker_AllBranches.xlsx',
+        1,
+        defaultOptions
+      );
+
+      expect(result.cellIR).toBeDefined();
+      expect(result.cellIR.metadata.sheetName).toBe('CS');
+      expect(result.layoutIR).toBeDefined();
+      expect(result.layoutIR.sections).toHaveLength(16);
+      expect(result.pdfResult).toBeDefined();
+      expect(result.pdfResult.pageCount).toBe(4);
+      expect(result.pdfResult.pdfBuffer.length).toBeGreaterThan(100000);
+    }, 45000);
   });
 });
 

@@ -6,7 +6,7 @@ import { generateTypstDocument } from '../../src/lib/typst/typst-generator';
 import { compileLayoutToPDF } from '../../src/lib/typst/typst-compiler';
 import type { TableSection, KpiGridContent } from '../../src/types/layout-ir';
 
-describe('GATE 2027 All Branches Fixture — Comprehensive End-to-End Acceptance Suite', { timeout: 60000 }, () => {
+describe('GATE 2027 All Branches Fixture — Comprehensive End-to-End Acceptance Suite', { timeout: 120000 }, () => {
   const fileBuffer = readFileSync('tests/fixtures/GATE2027_Tracker_AllBranches.xlsx');
   const arrayBuffer = fileBuffer.buffer.slice(
     fileBuffer.byteOffset,

@@ -107,7 +107,24 @@ function partitionRowBlocks(rows: CellRow[]): CellRow[][] {
 }
 
 /**
- * Detects whether a block of rows represents a KPI grid (key-value cards / target boxes).
+ * Finds the maximum non-empty column index for a given block to avoid creating
+ * trailing empty dummy columns (e.g. Col 4, Col 5 in 2-column tables).
+ */
+function getActiveColumnCount(block: CellRow[]): number {
+  let maxCol = 0;
+  for (const row of block) {
+    for (let c = 0; c < row.cells.length; c++) {
+      const cell = row.cells[c];
+      if (cell && cell.value !== null && cell.value !== undefined && String(cell.value).trim() !== '' && cell.type !== 'empty') {
+        maxCol = Math.max(maxCol, c + 1);
+      }
+    }
+  }
+  return maxCol;
+}
+
+/**
+ * Detects whether a block of rows represents a KPI grid or milestone status cards.
  */
 function tryParseKpiGrid(block: CellRow[]): KpiGridContent | null {
   if (block.length > 3) return null;
@@ -117,13 +134,15 @@ function tryParseKpiGrid(block: CellRow[]): KpiGridContent | null {
     return null;
   }
 
-  const items: KpiItem[] = [];
-  for (const row of block) {
-    const filledCells = getNonEmptyCells(row);
-    if (filledCells.length >= 2 && filledCells.length % 2 === 0) {
-      for (let i = 0; i < filledCells.length; i += 2) {
-        const labelCell = filledCells[i];
-        const valCell = filledCells[i + 1];
+  // Single row: key-value pairs or milestone checkpoints
+  if (block.length === 1) {
+    const filled = getNonEmptyCells(block[0]!);
+    // Key-Value pairs: e.g. "MY TARGET SCORE:", "______ / 100", "MY DAILY STUDY HOURS:", "______ hrs"
+    if (filled.length >= 4 && filled.length % 2 === 0) {
+      const items: KpiItem[] = [];
+      for (let i = 0; i < filled.length; i += 2) {
+        const labelCell = filled[i];
+        const valCell = filled[i + 1];
         if (labelCell && valCell) {
           items.push({
             label: String(labelCell.value),
@@ -131,11 +150,30 @@ function tryParseKpiGrid(block: CellRow[]): KpiGridContent | null {
           });
         }
       }
+      return { items, columns: items.length };
+    }
+
+    // Milestone checkpoint items in 1 row: e.g. 3 to 5 milestone goals
+    if (filled.length >= 3) {
+      const items: KpiItem[] = filled.map((c, idx) => ({
+        label: `CHECKPOINT ${idx + 1}`,
+        value: formatCellValue(c),
+      }));
+      return { items, columns: items.length };
     }
   }
 
-  if (items.length >= 2) {
-    return { items, columns: Math.min(items.length, 4) };
+  // 2 rows without header: Row 0 Labels, Row 1 Values
+  if (block.length === 2) {
+    const row0 = getNonEmptyCells(block[0]!);
+    const row1 = getNonEmptyCells(block[1]!);
+    if (row0.length >= 2 && row0.length === row1.length) {
+      const items: KpiItem[] = row0.map((c, i) => ({
+        label: String(c.value),
+        value: formatCellValue(row1[i]!),
+      }));
+      return { items, columns: Math.min(items.length, 4) };
+    }
   }
 
   return null;
@@ -171,34 +209,48 @@ function tryParseTextSection(block: CellRow[]): TextSectionContent | null {
 }
 
 /**
- * Converts a matrix of rows into a structured TableSection.
+ * Converts a matrix of rows into a structured TableSection with accurate column trimming.
  */
 function buildTableSection(block: CellRow[]): TableSection {
+  const activeCols = Math.max(1, getActiveColumnCount(block));
   const headerDetection = detectHeaderRow(block);
   const headerIdx = headerDetection ? headerDetection.headerIndex : 0;
   const headerRow = block[headerIdx];
 
-  const maxCols = block.reduce((max, r) => Math.max(max, r.cells.length), 0);
   const dataRows = block.filter((_, idx) => idx !== headerIdx);
 
-  // Classify each column
-  const columns = Array.from({ length: maxCols }, (_, colIdx) => {
-    const rawHeaderText = headerRow?.cells[colIdx]?.value != null ? String(headerRow.cells[colIdx]?.value).trim() : '';
+  // If there are no data rows (e.g. block had 1 row), treat that row as data with auto headers
+  let effectiveHeaderRow = headerRow;
+  let effectiveDataRows = dataRows;
+
+  if (dataRows.length === 0 && block.length === 1) {
+    effectiveHeaderRow = undefined;
+    effectiveDataRows = [block[0]!];
+  }
+
+  // Classify each active column
+  const columns = Array.from({ length: activeCols }, (_, colIdx) => {
+    const headerCell = effectiveHeaderRow?.cells.find(c => c.position?.col === colIdx) ?? effectiveHeaderRow?.cells[colIdx];
+    const rawHeaderText = headerCell?.value != null
+      ? String(headerCell.value).trim()
+      : '';
     const headerText = rawHeaderText !== '' ? rawHeaderText : `Col ${colIdx + 1}`;
-    const columnCells = dataRows.map(r => r.cells[colIdx] || { value: null, type: 'empty' as const, position: { row: r.rowIndex, col: colIdx } });
+    const columnCells = effectiveDataRows.map(
+      r => (r.cells.find(c => c.position?.col === colIdx) ?? r.cells[colIdx]) || { value: null, type: 'empty' as const, position: { row: r.rowIndex, col: colIdx } }
+    );
     return classifyColumn(columnCells, headerText, colIdx);
   });
 
   // Build TableRow objects
-  const tableRows: TableRow[] = dataRows.map(r => {
+  const tableRows: TableRow[] = effectiveDataRows.map(r => {
     const cells: TableCell[] = columns.map((col, colIdx) => {
-      const cell = r.cells[colIdx];
+      const cell = r.cells.find(c => c.position?.col === colIdx) ?? r.cells[colIdx];
       const val = cell?.value ?? null;
       const formatted = cell ? formatCellValue(cell) : '';
       return {
         value: val,
         formattedValue: formatted,
-        alignment: col.alignment,
+        alignment: cell?.style?.horizontalAlignment || col.alignment,
         style: cell?.style,
       };
     });
@@ -244,10 +296,30 @@ export function detectSections(cellIR: CellIR): { title?: string; sections: Docu
   for (const block of rawBlocks) {
     if (block.length === 0) continue;
 
+    // Single-row block handling
+    if (block.length === 1) {
+      const singleRow = block[0]!;
+      const { isBanner, text } = isBannerRow(singleRow);
+      if (isBanner && text.length > 0) {
+        sections.push({
+          type: 'text',
+          content: { paragraphs: [text] },
+        });
+        continue;
+      }
+
+      // Check if it's a KPI or milestone grid
+      const kpi = tryParseKpiGrid(block);
+      if (kpi) {
+        sections.push({ type: 'kpi-grid', content: kpi });
+        continue;
+      }
+    }
+
+    // Multi-row block: check if first row is a section title banner preceding a table or content
     let sectionTitle: string | undefined = undefined;
     let workingBlock = [...block];
 
-    // Check if the first row of this block is a section title banner preceding a table or content
     if (workingBlock.length > 1) {
       const firstInBlock = workingBlock[0]!;
       const { isBanner, text } = isBannerRow(firstInBlock);
@@ -261,7 +333,6 @@ export function detectSections(cellIR: CellIR): { title?: string; sections: Docu
       if (sectionTitle) {
         sections.push({
           type: 'text',
-          title: sectionTitle,
           content: { paragraphs: [sectionTitle] },
         });
       }
@@ -289,4 +360,3 @@ export function detectSections(cellIR: CellIR): { title?: string; sections: Docu
 
   return { title, sections };
 }
-

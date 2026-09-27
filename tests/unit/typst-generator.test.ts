@@ -1,5 +1,9 @@
 import { describe, it, expect } from 'vitest';
+import * as fs from 'fs';
+import * as path from 'path';
 import { generateTypstDocument } from '../../src/lib/typst/typst-generator';
+import { parseXLSX } from '../../src/workers/xlsx-parser';
+import { analyzeCellIR } from '../../src/lib/layout/layout-engine';
 import type { LayoutIR, DocumentSection, TableSection, KpiGridContent, TextSectionContent } from '../../src/types/layout-ir';
 
 describe('Typst Document & Section Generator', () => {
@@ -143,5 +147,30 @@ describe('Typst Document & Section Generator', () => {
     expect(typst).toContain('paper: "us-letter"');
     expect(typst).toContain('flipped: true');
     expect(typst).toContain('#059669'); // Emerald report primary color
+  });
+
+  describe('GATE 2027 Real Workbook Typst Generation', () => {
+    const filePath = path.resolve('tests/fixtures/GATE2027_Tracker_AllBranches.xlsx');
+    const fileBuffer = fs.readFileSync(filePath);
+    const arrayBuffer = fileBuffer.buffer.slice(
+      fileBuffer.byteOffset,
+      fileBuffer.byteOffset + fileBuffer.byteLength
+    );
+
+    it('should generate valid Typst markup for real GATE 2027 CS sheet', async () => {
+      const cellIR = await parseXLSX(arrayBuffer, 'GATE2027_Tracker_AllBranches.xlsx', 1);
+      const layout = analyzeCellIR(cellIR, { pageSize: 'a4', orientation: 'auto', theme: 'modern-clean' });
+      const typst = generateTypstDocument(layout, { theme: 'modern-clean' });
+
+      expect(typst).toContain('#set page(');
+      expect(typst).toContain('GATE 2027');
+      expect(typst).toContain('MARKS MAP');
+      expect(typst).toContain('General Aptitude');
+      expect(typst).toContain('Engineering Mathematics');
+      expect(typst).toContain('MY TARGET SCORE');
+      expect(typst).toContain('WEEKLY NON-NEGOTIABLES');
+      expect(typst).toContain('MOCK LOG');
+      expect(typst).toContain('ERROR LOG');
+    });
   });
 });

@@ -60,6 +60,7 @@ export interface PDFRenderResult {
   pdfBuffer: Uint8Array;
   pageCount: number;
   typstSource: string;
+  svg?: string;
 }
 
 export interface TypstWorkerAPI {

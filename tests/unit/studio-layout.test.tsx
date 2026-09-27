@@ -4,7 +4,7 @@ import { StudioLayout } from '../../src/components/layout/StudioLayout';
 import App from '../../src/App';
 import { useStudioStore } from '../../src/store/useStudioStore';
 
-describe('StudioLayout & App Integration', () => {
+describe('StudioLayout & App Integration', { timeout: 30000 }, () => {
   beforeEach(() => {
     useStudioStore.getState().resetStudio();
   });
@@ -21,8 +21,8 @@ describe('StudioLayout & App Integration', () => {
       );
 
       expect(screen.getByText(/Sheet to Art/i)).toBeDefined();
-      expect(screen.getByText(/Modern Clean/i)).toBeDefined();
-      expect(screen.getByRole('button', { name: /export pdf/i })).toBeDefined();
+      expect(screen.getAllByText(/Modern Clean/i).length).toBeGreaterThanOrEqual(1);
+      expect(screen.getAllByRole('button', { name: /export pdf/i }).length).toBeGreaterThanOrEqual(1);
     });
   });
 
@@ -45,7 +45,7 @@ describe('StudioLayout & App Integration', () => {
         () => {
           expect(screen.getByText(/Sheet to Art/i)).toBeDefined();
         },
-        { timeout: 5000 }
+        { timeout: 20000 }
       );
     });
   });

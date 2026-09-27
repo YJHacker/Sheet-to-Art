@@ -3,6 +3,14 @@ import { useState, useEffect, useRef } from 'react';
 import { useStudioStore } from './store/useStudioStore';
 import { executeDocumentPipeline, recompilePDF, revokePDFBlobUrl } from './lib/pipeline/document-pipeline';
 import { getSampleSpreadsheet } from './lib/utils/sample-data';
+import {
+  saveSession,
+  loadSession,
+  clearSession,
+  updateStoredOptions,
+  updateStoredActiveSheet,
+} from './lib/storage/persistence';
+import type { StudioOptions } from './types/studio';
 import { Dropzone } from './components/upload/Dropzone';
 import { ProgressBar } from './components/common/ProgressBar';
 import { Toast } from './components/common/Toast';
@@ -35,15 +43,24 @@ export default function App() {
     };
   }, []);
 
-  const handleProcessBuffer = async (buffer: ArrayBuffer, fileName: string, sheetIndex: number = 0) => {
+  const handleProcessBuffer = async (
+    buffer: ArrayBuffer,
+    fileName: string,
+    sheetIndex: number = 0,
+    overrideOptions?: StudioOptions
+  ) => {
     setErrorToast(null);
+    const optionsToUse = overrideOptions || store.options;
 
     try {
+      // Create a clean clone for processing so the state buffer is never detached
+      const processingBuffer = buffer.slice(0);
+
       const result = await executeDocumentPipeline(
-        buffer,
+        processingBuffer,
         fileName,
         sheetIndex,
-        store.options,
+        optionsToUse,
         (progress) => {
           store.setPipelineProgress(progress);
         }
@@ -54,7 +71,7 @@ export default function App() {
       store.setFile({
         name: fileName,
         size: buffer.byteLength,
-        buffer,
+        buffer: buffer.slice(0), // Preserve master buffer
         sheetNames,
         activeSheetIndex: sheetIndex,
       });
@@ -67,9 +84,19 @@ export default function App() {
       });
 
       store.setViewState({
-        totalPages: result.pdfResult.pageCount,
+        totalPages: result.pdfResult.pageCount || 1,
         currentPage: 1,
       });
+
+      // Persist to IndexedDB so navigating away / reloading restores session perfectly
+      saveSession({
+        fileName,
+        fileSize: buffer.byteLength,
+        buffer: buffer.slice(0),
+        sheetNames,
+        activeSheetIndex: sheetIndex,
+        options: optionsToUse,
+      }).catch((err) => console.warn('Failed to save session to IndexedDB:', err));
     } catch (err: any) {
       console.error('Document processing error:', err);
       const msg = err?.message || 'Failed to process spreadsheet.';
@@ -81,9 +108,39 @@ export default function App() {
     }
   };
 
+  // Restore stored session from IndexedDB on initial mount
+  useEffect(() => {
+    let mounted = true;
+
+    (async () => {
+      try {
+        const stored = await loadSession();
+        if (mounted && stored && stored.buffer && stored.fileName) {
+          if (stored.options) {
+            store.setOptions(stored.options);
+          }
+          await handleProcessBuffer(
+            stored.buffer,
+            stored.fileName,
+            stored.activeSheetIndex || 0,
+            stored.options
+          );
+        }
+      } catch (err) {
+        console.warn('Error restoring session from IndexedDB:', err);
+      }
+    })();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
   const handleSheetChange = async (sheetIndex: number) => {
     if (!store.file || !store.file.buffer) return;
-    await handleProcessBuffer(store.file.buffer, store.file.name, sheetIndex);
+    store.setActiveSheetIndex(sheetIndex);
+    updateStoredActiveSheet(sheetIndex).catch(() => {});
+    await handleProcessBuffer(store.file.buffer.slice(0), store.file.name, sheetIndex);
   };
 
   const handleFileSelected = async (file: File) => {
@@ -114,6 +171,11 @@ export default function App() {
     }
   };
 
+  const handleReset = () => {
+    clearSession().catch(() => {});
+    store.resetStudio();
+  };
+
   // Debounced PDF re-compilation when StudioOptions change
   const optionsKey = JSON.stringify(store.options);
   const initialMountRef = useRef(true);
@@ -127,6 +189,9 @@ export default function App() {
     if (!store.layoutIR || store.pipeline.stage === 'idle' || store.pipeline.stage === 'error') {
       return;
     }
+
+    // Persist option adjustments to IndexedDB
+    updateStoredOptions(store.options).catch(() => {});
 
     if (debounceTimerRef.current) {
       clearTimeout(debounceTimerRef.current);
@@ -158,13 +223,20 @@ export default function App() {
     };
   }, [optionsKey]);
 
-  const hasLoadedDocument = Boolean(store.cellIR && (store.pdfResult || store.layoutIR));
-  const isProcessing =
-    store.pipeline.stage === 'parsing' ||
-    store.pipeline.stage === 'layout' ||
-    store.pipeline.stage === 'compiling';
+  const hasLoadedDocument = Boolean(store.file && store.cellIR);
+  const isInitialProcessing =
+    !hasLoadedDocument &&
+    (store.pipeline.stage === 'parsing' ||
+      store.pipeline.stage === 'layout' ||
+      store.pipeline.stage === 'compiling');
 
-  if (hasLoadedDocument && !isProcessing) {
+  const isSwitchingSheet =
+    hasLoadedDocument &&
+    (store.pipeline.stage === 'parsing' ||
+      store.pipeline.stage === 'layout' ||
+      store.pipeline.stage === 'compiling');
+
+  if (hasLoadedDocument) {
     return (
       <StudioLayout
         fileName={store.file?.name}
@@ -172,8 +244,10 @@ export default function App() {
         sheetNames={store.file?.sheetNames || []}
         activeSheetIndex={store.file?.activeSheetIndex || 0}
         onSheetChange={handleSheetChange}
+        onOpenFile={handleFileSelected}
         isRecompiling={isRecompiling}
-        onReset={store.resetStudio}
+        isProcessing={isSwitchingSheet}
+        onReset={handleReset}
       />
     );
   }
@@ -197,7 +271,7 @@ export default function App() {
         <div className="text-center mb-8 sm:mb-10">
           <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-blue-50 border border-blue-200/80 text-blue-700 text-xs font-semibold mb-4 shadow-xs">
             <span className="w-2 h-2 rounded-full bg-blue-600 animate-ping" />
-            <span>Sprint 4 • Interactive Studio UI Ready</span>
+            <span>Document Preview & PDF Typesetting Studio</span>
           </div>
           <h1 className="text-3xl sm:text-5xl font-extrabold text-slate-900 tracking-tight">
             Sheet to <span className="text-blue-600">Art</span>
@@ -208,7 +282,7 @@ export default function App() {
         </div>
 
         {/* Processing Progress Bar */}
-        {isProcessing ? (
+        {isInitialProcessing ? (
           <div className="w-full max-w-xl my-8">
             <ProgressBar
               stage={store.pipeline.stage}

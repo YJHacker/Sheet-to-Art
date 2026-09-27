@@ -106,6 +106,18 @@ export function classifyColumn(
   } else if (stringCount / filledCount >= 0.8) {
     dataType = 'text';
     alignment = 'left';
+    // Center-align checklist / status columns (e.g. Done, Re-solved?, Status, or [ ] values)
+    const lowerHeader = headerText.toLowerCase().trim();
+    if (
+      lowerHeader === 'done' ||
+      lowerHeader === 're-solved?' ||
+      lowerHeader === 'resolved?' ||
+      lowerHeader === 'status' ||
+      lowerHeader === '#' ||
+      (filledCount > 0 && uniqueSet.size === 1 && (uniqueSet.has('[ ]') || uniqueSet.has('—') || uniqueSet.has('-')))
+    ) {
+      alignment = 'center';
+    }
   } else {
     dataType = 'mixed';
     alignment = 'left';
@@ -125,7 +137,8 @@ export function classifyColumn(
 
   // Base width estimation (points)
   const charWidthPt = dataType === 'number' ? 5.5 : 5.0;
-  const minWidth = Math.max(36, headerText.length * charWidthPt + 12);
+  const contentLen = Math.max(headerText.length, maxLength <= 15 ? maxLength : Math.min(maxLength, 12));
+  const minWidth = Math.max(36, contentLen * charWidthPt + 12);
   const maxWidth = Math.max(minWidth, maxLength * charWidthPt + 16);
   const suggestedWidth = Math.min(Math.max(minWidth, (minWidth + maxWidth) / 2), 250);
 

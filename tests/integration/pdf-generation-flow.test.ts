@@ -207,4 +207,31 @@ describe('End-to-End PDF Generation Flow: Spreadsheet -> CellIR -> LayoutIR -> P
     expect(result.typstSource).toContain('Regional Breakdown');
     expect(result.typstSource).toContain('Notes & Accounting Methodology');
   }, 45000);
+
+  it('should render real GATE 2027 workbook end-to-end into publication-ready multi-page PDFs', async () => {
+    const filePath = path.resolve(__dirname, '../fixtures/GATE2027_Tracker_AllBranches.xlsx');
+    const buffer = fs.readFileSync(filePath);
+    const arrayBuffer = buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength);
+
+    // Test Sheet 0: START HERE
+    const cellIR0 = await parserWorker.parseFile(arrayBuffer, 'GATE2027_Tracker_AllBranches.xlsx', 0);
+    const layoutIR0 = await layoutWorker.analyzeLayout(cellIR0, { pageSize: 'a4', orientation: 'auto' });
+    const result0 = await typstWorker.renderLayoutToPDF(layoutIR0, { theme: 'modern-clean' });
+
+    expect(result0.pageCount).toBe(2);
+    expect(result0.pdfBuffer.length).toBeGreaterThan(50000);
+    expect(result0.typstSource).toContain('REVERSE CALENDAR');
+    expect(result0.typstSource).toContain('THE FOUR WEEKLY NON-NEGOTIABLES');
+
+    // Test Sheet 1: CS
+    const cellIR1 = await parserWorker.parseFile(arrayBuffer, 'GATE2027_Tracker_AllBranches.xlsx', 1);
+    const layoutIR1 = await layoutWorker.analyzeLayout(cellIR1, { pageSize: 'a4', orientation: 'auto' });
+    const result1 = await typstWorker.renderLayoutToPDF(layoutIR1, { theme: 'modern-clean' });
+
+    expect(result1.pageCount).toBe(4);
+    expect(result1.pdfBuffer.length).toBeGreaterThan(100000);
+    expect(result1.typstSource).toContain('MARKS MAP');
+    expect(result1.typstSource).toContain('MONTH-WISE PLAN');
+    expect(result1.typstSource).toContain('ERROR LOG');
+  }, 60000);
 });

@@ -2,7 +2,9 @@
 import { sanitizeFileName } from './formatters';
 
 /**
- * Initiates a browser download for a Blob.
+ * Initiates a browser download for a Blob using a clean, standard anchor element.
+ * Complies with WHATWG / Chromium download specifications without triggering
+ * cross-origin navigation warnings.
  */
 export function downloadBlob(blob: Blob, filename: string): void {
   if (typeof window === 'undefined' || typeof document === 'undefined') return;
@@ -20,7 +22,7 @@ export function downloadBlob(blob: Blob, filename: string): void {
   link.click();
   document.body.removeChild(link);
 
-  // Clean up object URL
+  // Allow browser sufficient window for download stream initiation before revoking
   if (typeof URL !== 'undefined' && typeof URL.revokeObjectURL === 'function') {
     setTimeout(() => {
       try {
@@ -28,12 +30,12 @@ export function downloadBlob(blob: Blob, filename: string): void {
       } catch {
         // ignore
       }
-    }, 1000);
+    }, 10000);
   }
 }
 
 /**
- * Downloads a PDF buffer or Blob with a sanitized filename.
+ * Downloads a PDF buffer or Blob with a sanitized filename and explicit MIME type.
  */
 export function downloadPDF(
   pdfData: Uint8Array | ArrayBuffer | Blob,
@@ -45,9 +47,13 @@ export function downloadPDF(
   if (pdfData instanceof Blob) {
     blob = pdfData;
   } else if (pdfData instanceof Uint8Array) {
-    blob = new Blob([pdfData as unknown as BlobPart], { type: 'application/pdf' });
+    const cleanBuffer = pdfData.buffer.slice(
+      pdfData.byteOffset,
+      pdfData.byteOffset + pdfData.byteLength
+    );
+    blob = new Blob([cleanBuffer as BlobPart], { type: 'application/pdf' });
   } else {
-    blob = new Blob([new Uint8Array(pdfData) as unknown as BlobPart], { type: 'application/pdf' });
+    blob = new Blob([pdfData as BlobPart], { type: 'application/pdf' });
   }
 
   downloadBlob(blob, safeName);
@@ -77,7 +83,9 @@ export function printPDF(blobUrl: string): void {
       window.open(blobUrl, '_blank')?.print();
     } finally {
       setTimeout(() => {
-        document.body.removeChild(iframe);
+        if (document.body.contains(iframe)) {
+          document.body.removeChild(iframe);
+        }
       }, 5000);
     }
   };

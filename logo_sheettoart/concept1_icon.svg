@@ -1,0 +1,21 @@
+<svg width="128" height="128" viewBox="0 0 52 52" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="c1_icon_blue" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#60A5FA"/>
+      <stop offset="100%" stop-color="#2563EB"/>
+    </linearGradient>
+    <linearGradient id="c1_icon_coral" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FB923C"/>
+      <stop offset="100%" stop-color="#EA580C"/>
+    </linearGradient>
+    <linearGradient id="c1_icon_cyan" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38BDF8"/>
+      <stop offset="100%" stop-color="#0284C7"/>
+    </linearGradient>
+  </defs>
+  <rect x="0" y="28" width="22" height="22" rx="4.5" fill="url(#c1_icon_blue)"/>
+  <rect x="0" y="0" width="22" height="22" rx="4.5" fill="url(#c1_icon_cyan)" opacity="0.85"/>
+  <rect x="28" y="28" width="22" height="22" rx="4.5" fill="url(#c1_icon_blue)" opacity="0.6"/>
+  <path d="M28,17 L41,2 L52,13 L39,28 Z" fill="url(#c1_icon_coral)"/>
+  <circle cx="40" cy="15" r="2.8" fill="#FFFFFF"/>
+</svg>

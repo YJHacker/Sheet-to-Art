@@ -28,7 +28,7 @@ export const LayoutModeControls: React.FC<LayoutModeControlsProps> = ({
     <div className={`flex flex-col gap-4 ${className}`}>
       {/* Document Custom Title */}
       <div className="flex flex-col gap-1.5">
-        <label htmlFor="custom-title-input" className="text-xs font-semibold uppercase tracking-wider text-slate-600">
+        <label htmlFor="custom-title-input" className="text-xs font-bold uppercase tracking-wider text-slate-700">
           Document Title
         </label>
         <input
@@ -37,7 +37,7 @@ export const LayoutModeControls: React.FC<LayoutModeControlsProps> = ({
           value={options.customTitle}
           placeholder="Leave blank for automatic sheet title"
           onChange={(e) => onOptionsChange({ customTitle: e.target.value })}
-          className="w-full bg-white/90 border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm"
+          className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-xs"
         />
       </div>
 
@@ -87,3 +87,4 @@ export const LayoutModeControls: React.FC<LayoutModeControlsProps> = ({
     </div>
   );
 };
+

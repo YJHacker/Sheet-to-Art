@@ -8,29 +8,30 @@ Transform messy spreadsheets into beautifully typeset PDF documents with determi
 
 ## Project Status
 
-- **Sprint 1: Core Parsing & Cell IR** ✅ **COMPLETE**
-- **Sprint 2: Layout Heuristics & Section Engine** ✅ **COMPLETE**
-- **Sprint 3: Typst WASM Typesetting & PDF Generation** ✅ **COMPLETE** (Tasks 1–8)
-- **Sprint 4: Interactive Studio UI & 5 Themes** 🔲 **NEXT**
-- **Sprint 5: Adversarial Regression Testing & Polish** 🔲 Planned
+- **Sprint 1: Core Parsing & Cell IR** ✅ **COMPLETE & ENHANCED**
+- **Sprint 2: Layout Heuristics & Section Engine** ✅ **COMPLETE & ENHANCED**
+- **Sprint 3: Typst WASM Typesetting & PDF Generation** ✅ **COMPLETE & ENHANCED**
+- **Sprint 4: Interactive Studio UI, Multi-Sheet & Persistence** ✅ **COMPLETE & VERIFIED**
+- **Sprint 5: Preset Templates, Batch Multi-Sheet Export & Polish** 🔲 Planned
 
-### Implemented Capabilities (Sprints 1, 2 & 3)
+### Implemented Capabilities (Sprints 1–4)
 
 #### 1. Ingestion & Cell IR (Sprint 1)
-- **XLSX Parser (`ExcelJS`):** Style extraction (bold, italic, font size, fills, borders, number formats, alignments), merged cell geometry, formula caching.
+- **XLSX Parser (`ExcelJS`):** Style extraction (bold, italic, font size, ARGB fills, borders, number formats, alignments), merged cell geometry, formula caching, trailing whitespace trimming.
+- **Multi-Sheet Workbook Discovery:** Metadata discovery (`extractSheetsMetadata`) extracting sheet names, dimensions, index, and hidden flags across multi-sheet workbooks.
 - **CSV Parser (`PapaParse`):** Delimiter auto-detection, UTF-8 decoding, type inference.
-- **Parser Web Worker:** Off-thread processing with Comlink RPC bridge.
-- **Cell Intermediate Representation (`CellIR`):** 2D normalized cell grid with position and style metadata.
+- **Parser Web Worker:** Off-thread processing with Comlink RPC bridge and cloned `ArrayBuffer` buffer slices (`buffer.slice(0)`) to prevent detachment.
+- **Cell Intermediate Representation (`CellIR`):** 2D normalized cell grid with position, styling, and semantic metadata.
 
 #### 2. Layout Heuristics & Section Engine (Sprint 2)
 - **Layout IR Type System (`LayoutIR`):** Strongly-typed multi-section document model (`TableSection`, `KpiGridContent`, `TextSectionContent`).
+- **Semantic Section Detector (`section-detector.ts`):** Prevents multi-table collapse on complex sheets by segmenting into distinct typed sections (Tables, KPI Cards, Callout Notes).
 - **Deterministic Header Scoring:** Calibrated formula evaluating candidate rows:
   $$S = 0.60B + 0.30T + 0.05F + 0.03C + 0.02U$$
   *(Threshold $S \ge 0.85$ identifies header rows vs. title banners).*
-- **Column Classification & Data Typing:** Automatic inference of `number` (integer/decimal/currency/percent), `date`, `boolean`, `text`, and `mixed` types with semantic alignment rules.
+- **Column Classification & Data Typing (`column-classifier.ts`):** Proportional column width allocation based on content density and automatic inference of `number`, `date`, `boolean`, `text`, and `mixed` types with semantic alignment rules.
 - **Proportional Column Width Allocation:** Square-root content length weighting ($w_j \propto \sqrt{\text{length}_j}$) prevents wide text columns from compressing numeric data.
-- **Page Geometry Optimizer:** Dynamic orientation switching (`portrait` / `landscape`) and font scale compression (down to 7.5pt) for wide spreadsheets.
-- **Multi-Section Detector:** Segmenting sheets into title banners, primary tables, KPI summary cards, and trailing explanatory notes.
+- **Page Geometry Optimizer:** Dynamic orientation switching (`portrait` / `landscape`) and font scale compression (down to 7.5pt) for wide spreadsheet layouts.
 - **Layout Web Worker & Comlink RPC:** Fully decoupled Web Worker with progress callbacks and main-thread fallback bridges.
 
 #### 3. Typst WASM Typesetting & PDF Generation (Sprint 3)
@@ -42,10 +43,19 @@ Transform messy spreadsheets into beautifully typeset PDF documents with determi
   3. `compact-ledger` (High density, monospace-accented, tight padding)
   4. `emerald-report` (Modern dashboard green `#059669`)
   5. `monochrome-pure` (Crisp black & white laser printing)
+- **Vector Glyph Post-Processor:** Post-processes vector SVG glyphs (`fill: var(--glyph_fill, inherit)`, `stroke: var(--glyph_stroke, none)`) ensuring crisp rendering across all browsers.
 - **In-Memory PDF Assembler (`pdf-lib`):** Merging multi-section PDF buffers, extracting page counts, stamping document metadata.
-- **Typst WASM Compiler Wrapper (`@myriaddreamin/typst.ts`):** 100% offline, zero-network WASM compilation yielding clean `Uint8Array` PDF buffers with `%PDF-` binary magic headers.
+- **Typst WASM Compiler Wrapper (`@myriaddreamin/typst.ts`):** 100% offline, zero-network WASM compilation yielding clean `Uint8Array` PDF buffers and page SVG vector previews.
 - **Typst Web Worker & Comlink RPC:** Offloaded typesetting pipeline in dedicated worker.
-- **End-to-End PDF Integration Suite:** Validated end-to-end pipeline from raw file buffer to valid multi-page PDF output across all themes.
+
+#### 4. Interactive Studio UI, Multi-Sheet Workspace & Persistence (Sprint 4)
+- **Interactive Studio Workspace (`StudioLayout.tsx`):** Split-pane reactive workspace with Header, Sidebar, Toolbar, and Preview Viewport.
+- **Multi-Sheet Navigation:** Interactive tab bar in Header and sidebar sheet selector with instantaneous re-compilation and buffer persistence.
+- **Dual Preview Modes:** Seamless toggling between Vector PDF View (WASM typeset) and Document View (semantic HTML).
+- **Persistence & Auto-Restore:** IndexedDB caching for active workbook buffer and user customization options with automatic restoration on page reload.
+- **Live Theme & Layout Customization:** Live switching across all 5 themes, page size (A4, Letter, Legal, A3, A5), orientation (Auto, Portrait, Landscape), margins, and font scaling.
+- **Export Flow & Download Utility:** Same-origin Blob download modal with custom filename support and native print triggers.
+- **Mobile Responsive Workspace:** Responsive drawer navigation and horizontal theme carousel for touch devices with 44px+ touch targets.
 
 ---
 
@@ -55,10 +65,10 @@ Transform messy spreadsheets into beautifully typeset PDF documents with determi
 Raw Spreadsheet (.xlsx / .csv)
        │
        ▼ [Parser Worker - Comlink RPC]
-Raw Matrix + Cell Properties + Merged Cells
+Raw Matrix + Cell Properties + Merged Cells + Multi-Sheet Discovery
        │
-       ▼ [Normalization]
-Clean Bounding-Box Normalized 2D Grid (Cell IR)
+       ▼ [Normalization & Section Detection]
+Clean Bounding-Box Normalized 2D Grid (Cell IR) & Semantic Sections
        │
        ▼ [Layout Worker - Comlink RPC]
 Header Scoring Heuristics + Section Segmentation + Geometry Optimization
@@ -67,7 +77,7 @@ Header Scoring Heuristics + Section Segmentation + Geometry Optimization
 Structured Document Sections (Tables, KPI Grids, Notes) & Page Styles
        │
        ▼ [Typst Worker - Comlink RPC]
-Typst 0.11+ Markup + Typst WASM Compilation + pdf-lib ──► Publication-Grade PDF
+Typst 0.11+ Markup + Typst WASM Compilation + Vector Glyph Post-Processing ──► Publication-Grade PDF & Vector SVG
 ```
 
 ### Privacy & Security
@@ -79,11 +89,11 @@ Typst 0.11+ Markup + Typst WASM Compilation + pdf-lib ──► Publication-Grad
 
 ## Quality Gates & Verification
 
-- **Tests:** 80 passing tests across 21 test files (`Vitest`)
-  - Unit tests: Cell IR, XLSX parser, CSV parser, Layout IR, Header detector, Column classifier, Column width allocator, Section detector, Layout engine, Parser worker, Layout worker, Typst types, Typst escaper, Typst themes, Typst generator, PDF assembler, Typst compiler, Typst worker.
-  - Integration tests: End-to-end parse flow, end-to-end layout flow, end-to-end PDF generation flow.
-- **Strict TypeScript:** `npx tsc --noEmit` clean with `strict: true` and `noUncheckedIndexedAccess: true`.
-- **Production Build:** Vite production bundle with separate worker chunks verified.
+- **Tests:** 170 passing tests across 39 test files (`Vitest`)
+  - Unit tests: Studio store, Preview viewport, Typst generator, Section detector, XLSX parser, Sidebar controls, Document pipeline, Persistence, UI primitives, Header detector, Column width allocator, Dropzone, Typst compiler, Layout engine, Column classifier, Export flow, Typst themes, Layout IR, CSV parser, PDF assembler, Sample data, Theme selector, Typst escaper, Cell IR, Parser worker, Layout worker, Typst worker, Typst types.
+  - Integration tests: GATE 2027 end-to-end acceptance, GATE 2027 data fidelity (all 7 sheets), Product core acceptance, PDF generation flow, Studio UI flow, Mobile responsiveness, Parse flow, Layout flow, Persistence auto-restore flow, GATE 2027 studio UI flow.
+- **Strict TypeScript:** `npx tsc --noEmit` clean with `strict: true` and `noUncheckedIndexedAccess: true` (0 errors).
+- **Production Build:** `npm run build` cleanly bundles main app, 3 Web Worker chunks, WASM modules, and CSS assets.
 
 ---
 

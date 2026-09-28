@@ -62,8 +62,8 @@
 
 ## 3. Brand Identity & Logo Concepts
 
-### Status: PENDING FINAL SELECTION
-All three candidate logo concepts were researched, generated in vector SVG, and preserved in `/root/logo_sheettoart/`:
+### Status: SELECTED & FINALIZED (Concept 3 - The Golden Folio)
+All three candidate logo concepts were researched, generated in vector SVG, and preserved in `/root/logo_sheettoart/`. Concept 3 has been finalized as the official logo mark:
 
 1. **Concept 1: The Metamorphic Grid (Prism Cell)**
    - Metaphor: 2×2 tabular cell grid where top-right cell elevates into an isometric diamond facet.
@@ -71,13 +71,14 @@ All three candidate logo concepts were researched, generated in vector SVG, and 
 2. **Concept 2: The Dynamic S-A Monogram (Kinetic Flow)**
    - Metaphor: Continuous unbroken ribbon connecting fluid data stream ('S') to architectural document apex ('A').
    - Files: `logo_sheettoart/concept2_sa_monogram.svg`, `logo_sheettoart/concept2_icon.svg`
-3. **Concept 3: The Golden Folio (Swiss Edition)**
+3. **Concept 3: The Golden Folio (Swiss Edition) — SELECTED & FINALIZED**
    - Metaphor: Architectural document frame with golden ratio guides and vermillion focal node.
-   - Files: `logo_sheettoart/concept3_golden_folio.svg`, `logo_sheettoart/concept3_icon.svg`
+   - Finalized Assets: `logo_sheettoart/final_golden_folio_sheettoart.svg` ("Sheet to Art" wordmark), `logo_sheettoart/final_golden_folio_dark.svg`, `logo_sheettoart/final_icon.svg`
+   - Preserved Original: `logo_sheettoart/concept3_golden_folio.svg`, `logo_sheettoart/concept3_icon.svg`
 
 - **Interactive Presentation:** `brand_identity_presentation.html` (and `logo_sheettoart/brand_identity_presentation.html`)
-- **Server:** `scripts/serve_brand_presentation.py` (served on port 5174)
 - **Selection Record:** `logo_sheettoart/FINAL_SELECTION.md`
+- **UI Independence:** Golden Folio logo selection applies to brand marks. The application UI develops an original, modern creative SaaS visual identity without forcing traditional serif editorial aesthetic onto the interactive studio.
 
 ---
 

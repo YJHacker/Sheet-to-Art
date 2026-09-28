@@ -104,10 +104,20 @@ export const Dropzone: React.FC<DropzoneProps> = ({
             : 'border-slate-300 hover:border-blue-400 bg-white/90 hover:bg-white shadow-xs'
         }`}
       >
-        {/* Upload Icon */}
-        <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-100 flex items-center justify-center text-blue-600 mb-4 group-hover:scale-105 group-hover:bg-blue-100/60 transition-all duration-200 shadow-xs">
-          <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+        {/* Upload & Brand Icon */}
+        <div className="w-16 h-16 rounded-2xl bg-zinc-900 border border-zinc-700/80 flex items-center justify-center text-white mb-4 group-hover:scale-105 group-hover:border-zinc-500 transition-all duration-200 shadow-md relative overflow-hidden">
+          <svg className="w-9 h-9" viewBox="0 0 44 52" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="dropzone_folio_red" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="#EF4444" />
+                <stop offset="100%" stopColor="#B91C1C" />
+              </linearGradient>
+            </defs>
+            <rect x="3" y="3" width="34" height="42" rx="2.5" fill="none" stroke="#F4F4F5" strokeWidth="2.5" />
+            <line x1="3" y1="18" x2="37" y2="18" stroke="#71717A" strokeWidth="1.2" strokeDasharray="2 2" />
+            <line x1="20" y1="18" x2="20" y2="45" stroke="#71717A" strokeWidth="1.2" strokeDasharray="2 2" />
+            <circle cx="20" cy="18" r="3.5" fill="url(#dropzone_folio_red)" />
+            <path d="M3,3 L15,3 C15,15 3,15 3,15 Z" fill="url(#dropzone_folio_red)" />
           </svg>
         </div>
 

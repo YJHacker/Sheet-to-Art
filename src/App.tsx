@@ -270,14 +270,15 @@ export default function App() {
         {/* Brand Header */}
         <div className="text-center mb-8 sm:mb-10">
           <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-blue-50 border border-blue-200/80 text-blue-700 text-xs font-semibold mb-4 shadow-xs">
-            <span className="w-2 h-2 rounded-full bg-blue-600 animate-ping" />
-            <span>Document Preview & PDF Typesetting Studio</span>
+            <span className="w-2 h-2 rounded-full bg-red-500 animate-ping" />
+            <span>Intelligent Document & PDF Typesetting Engine</span>
           </div>
-          <h1 className="text-3xl sm:text-5xl font-extrabold text-slate-900 tracking-tight">
-            Sheet to <span className="text-blue-600">Art</span>
+          <h1 className="text-3xl sm:text-5xl font-extrabold text-slate-900 tracking-tight flex items-center justify-center gap-1.5">
+            Sheet to Art
+            <span className="w-2.5 h-2.5 rounded-full bg-red-600 inline-block shrink-0" title="Golden Folio Node" />
           </h1>
           <p className="mt-3 text-base sm:text-lg text-slate-600 max-w-xl mx-auto leading-relaxed">
-            Upload messy spreadsheets. Let automated layout heuristics and Typst WASM typeset them into publication-grade, beautiful PDFs.
+            Transform messy spreadsheets into publication-grade, beautiful PDF documents. 100% client-side privacy with automated layout intelligence and Typst WASM.
           </p>
         </div>
 

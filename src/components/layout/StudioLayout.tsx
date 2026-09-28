@@ -178,10 +178,14 @@ export const StudioLayout: React.FC<StudioLayoutProps> = ({
                 onClick={() =>
                   setMobileActiveAccordion(mobileActiveAccordion === 'layout' ? null : 'layout')
                 }
-                className="w-full flex items-center justify-between p-3.5 text-left font-bold text-xs text-slate-800 hover:bg-slate-50 transition cursor-pointer"
+                className="w-full flex items-center justify-between p-3.5 text-left font-bold text-xs text-slate-800 hover:bg-slate-50 transition cursor-pointer min-h-[44px]"
               >
-                <div className="flex items-center gap-2">
-                  <span className="text-base" aria-hidden="true">⚙️</span>
+                <div className="flex items-center gap-2.5">
+                  <div className="w-6 h-6 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
+                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+                    </svg>
+                  </div>
                   <span>Page Setup & Layout Options</span>
                 </div>
                 <svg
@@ -219,10 +223,14 @@ export const StudioLayout: React.FC<StudioLayoutProps> = ({
                 onClick={() =>
                   setMobileActiveAccordion(mobileActiveAccordion === 'outline' ? null : 'outline')
                 }
-                className="w-full flex items-center justify-between p-3.5 text-left font-bold text-xs text-slate-800 hover:bg-slate-50 transition cursor-pointer"
+                className="w-full flex items-center justify-between p-3.5 text-left font-bold text-xs text-slate-800 hover:bg-slate-50 transition cursor-pointer min-h-[44px]"
               >
-                <div className="flex items-center gap-2">
-                  <span className="text-base" aria-hidden="true">📑</span>
+                <div className="flex items-center gap-2.5">
+                  <div className="w-6 h-6 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center">
+                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+                    </svg>
+                  </div>
                   <span>Document Outline & Sections</span>
                 </div>
                 <svg
@@ -253,10 +261,14 @@ export const StudioLayout: React.FC<StudioLayoutProps> = ({
                   onClick={() =>
                     setMobileActiveAccordion(mobileActiveAccordion === 'file' ? null : 'file')
                   }
-                  className="w-full flex items-center justify-between p-3.5 text-left font-bold text-xs text-slate-800 hover:bg-slate-50 transition cursor-pointer"
+                  className="w-full flex items-center justify-between p-3.5 text-left font-bold text-xs text-slate-800 hover:bg-slate-50 transition cursor-pointer min-h-[44px]"
                 >
-                  <div className="flex items-center gap-2">
-                    <span className="text-base" aria-hidden="true">📁</span>
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-6 h-6 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                      <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      </svg>
+                    </div>
                     <span>File Metadata & Worksheet</span>
                   </div>
                   <svg

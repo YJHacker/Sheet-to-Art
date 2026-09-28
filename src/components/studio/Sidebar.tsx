@@ -75,13 +75,28 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 role="tab"
                 aria-selected={isActive}
                 onClick={() => onTabChange(tab.id)}
-                className={`text-xs font-bold py-2 px-2 rounded-lg transition-all duration-150 text-center truncate cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${
+                className={`text-xs font-bold py-2 px-1.5 rounded-lg transition-all duration-150 flex items-center justify-center gap-1.5 text-center truncate cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${
                   isActive
                     ? 'bg-white text-slate-900 shadow-xs'
                     : 'text-slate-600 hover:text-slate-900 hover:bg-white/40'
                 }`}
               >
-                {tab.label}
+                {tab.id === 'theme' && (
+                  <svg className="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21a4 4 0 01-4-4 5 5 0 015-5h1a1 1 0 011 1v1a2 2 0 002 2h1a5 5 0 015 5 4 4 0 01-4 4H7z" />
+                  </svg>
+                )}
+                {tab.id === 'layout' && (
+                  <svg className="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+                  </svg>
+                )}
+                {tab.id === 'outline' && (
+                  <svg className="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+                  </svg>
+                )}
+                <span className="truncate">{tab.label}</span>
               </button>
             );
           })}

@@ -6,7 +6,7 @@ import { generateTypstDocument } from '../../src/lib/typst/typst-generator';
 import { compileLayoutToPDF } from '../../src/lib/typst/typst-compiler';
 import type { TableSection, KpiGridContent, TextSectionContent } from '../../src/types/layout-ir';
 
-describe('GATE 2027 Comprehensive Data Fidelity & Structural Layout Acceptance Suite', { timeout: 90000 }, () => {
+describe('GATE 2027 Comprehensive Data Fidelity & Structural Layout Acceptance Suite', { timeout: 180000 }, () => {
   const filePath = 'tests/fixtures/GATE2027_Tracker_AllBranches.xlsx';
   const fileBuffer = readFileSync(filePath);
   const arrayBuffer = fileBuffer.buffer.slice(

@@ -1,0 +1,19 @@
+<svg width="400" height="90" viewBox="0 0 400 90" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="final_red" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#EF4444"/>
+      <stop offset="100%" stop-color="#B91C1C"/>
+    </linearGradient>
+  </defs>
+  <!-- Symbol: Swiss Document Folio -->
+  <g transform="translate(26, 20)">
+    <rect x="2" y="2" width="34" height="44" rx="2" fill="none" stroke="#18181B" stroke-width="2.5"/>
+    <line x1="2" y1="18" x2="36" y2="18" stroke="#A1A1AA" stroke-width="1.2" stroke-dasharray="2 2"/>
+    <line x1="20" y1="18" x2="20" y2="46" stroke="#A1A1AA" stroke-width="1.2" stroke-dasharray="2 2"/>
+    <circle cx="20" cy="18" r="3.5" fill="url(#final_red)"/>
+    <path d="M2,2 L14,2 C14,14 2,14 2,14 Z" fill="url(#final_red)"/>
+  </g>
+  <!-- Wordmark: Sheet to Art -->
+  <text x="86" y="46" fill="#18181B" font-family="'Instrument Serif', Georgia, serif" font-size="28" font-weight="400" letter-spacing="-0.01em">Sheet <tspan font-family="'Geist', 'Inter', sans-serif" font-weight="300" font-size="18" fill="#DC2626">to</tspan> Art</text>
+  <text x="88" y="65" fill="#71717A" font-family="'JetBrains Mono', monospace" font-size="9.5" font-weight="600" letter-spacing="0.16em">INTELLIGENT TYPESETTING ENGINE</text>
+</svg>

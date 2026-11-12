@@ -16,6 +16,10 @@
 
 Drop an `.xlsx` or `.csv` and get a typeset PDF with detected sections, KPI grids, tables, notes, consistent column geometry and five print themes. Nothing is uploaded: parsing, layout and typesetting all run in the browser.
 
+![Sheet to Art studio showing a generated Q3 financial report](docs/screenshots/studio.png)
+
+<p align="center"><em>The studio with a real Q3 financial report in the vector preview — generated in the browser from a CSV.</em></p>
+
 ## Why
 
 Most spreadsheet-to-PDF tools print the grid. Real sheets have structure — title banners, KPI cards, multiple tables, footnotes, merged cells and inconsistent widths. Sheet to Art reads that structure first, then typesets it:

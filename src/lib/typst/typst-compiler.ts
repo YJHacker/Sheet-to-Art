@@ -53,10 +53,14 @@ async function getFontBuffers(): Promise<Uint8Array[]> {
       // Fall through
     }
   } else if (typeof fetch === 'function') {
-    // Browser environment: fetch pre-bundled fonts from public /fonts/
+    // Browser environment: fetch pre-bundled fonts from the public folder,
+    // respecting Vite's base path (e.g. /Sheet-to-Art/ on GitHub Pages).
+    const fontBase = import.meta.env.BASE_URL.endsWith('/')
+      ? import.meta.env.BASE_URL
+      : `${import.meta.env.BASE_URL}/`;
     const fontPromises = fontNames.map(async (name) => {
       try {
-        const res = await fetch(`/fonts/${name}`);
+        const res = await fetch(`${fontBase}fonts/${name}`);
         if (res.ok) {
           const ab = await res.arrayBuffer();
           return new Uint8Array(ab);

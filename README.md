@@ -1,153 +1,159 @@
-# Sheet to Art
+<p align="center">
+  <img src="logo_sheettoart/final_golden_folio_sheettoart.svg" width="88" alt="Sheet to Art logo" />
+</p>
 
-Transform messy spreadsheets into beautifully typeset PDF documents with deterministic layout intelligence and client-side typesetting.
+<h1 align="center">Sheet to Art</h1>
 
-> **Product Vision:** Upload a spreadsheet. Let the system understand its semantic structure, organize sections, allocate column geometry, and typeset a publication-grade document—100% in the client browser with complete privacy.
+<p align="center"><strong>Turn spreadsheets into publication-grade PDFs — 100% in your browser.</strong></p>
 
----
+<p align="center">
+  <a href="https://yjhacker.github.io/Sheet-to-Art/"><img src="https://img.shields.io/badge/live-demo-2ea44f?style=flat-square" alt="Live demo"></a>
+  <a href="https://github.com/YJHacker/Sheet-to-Art/actions/workflows/ci.yml"><img src="https://github.com/YJHacker/Sheet-to-Art/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
+  <img src="https://img.shields.io/badge/license-MIT-blue?style=flat-square" alt="MIT license">
+</p>
 
-## Project Status
+**Live demo:** [https://yjhacker.github.io/Sheet-to-Art/](https://yjhacker.github.io/Sheet-to-Art/)
 
-- **Sprint 1: Core Parsing & Cell IR** ✅ **COMPLETE & ENHANCED**
-- **Sprint 2: Layout Heuristics & Section Engine** ✅ **COMPLETE & ENHANCED**
-- **Sprint 3: Typst WASM Typesetting & PDF Generation** ✅ **COMPLETE & ENHANCED**
-- **Sprint 4: Interactive Studio UI, Multi-Sheet & Persistence** ✅ **COMPLETE & VERIFIED**
-- **Sprint 5: Preset Templates, Batch Multi-Sheet Export & Polish** 🔲 Planned
+Drop an `.xlsx` or `.csv` and get a typeset PDF with detected sections, KPI grids, tables, notes, consistent column geometry and five print themes. Nothing is uploaded: parsing, layout and typesetting all run in the browser.
 
-### Implemented Capabilities (Sprints 1–4)
+## Why
 
-#### 1. Ingestion & Cell IR (Sprint 1)
-- **XLSX Parser (`ExcelJS`):** Style extraction (bold, italic, font size, ARGB fills, borders, number formats, alignments), merged cell geometry, formula caching, trailing whitespace trimming.
-- **Multi-Sheet Workbook Discovery:** Metadata discovery (`extractSheetsMetadata`) extracting sheet names, dimensions, index, and hidden flags across multi-sheet workbooks.
-- **CSV Parser (`PapaParse`):** Delimiter auto-detection, UTF-8 decoding, type inference.
-- **Parser Web Worker:** Off-thread processing with Comlink RPC bridge and cloned `ArrayBuffer` buffer slices (`buffer.slice(0)`) to prevent detachment.
-- **Cell Intermediate Representation (`CellIR`):** 2D normalized cell grid with position, styling, and semantic metadata.
+Most spreadsheet-to-PDF tools print the grid. Real sheets have structure — title banners, KPI cards, multiple tables, footnotes, merged cells and inconsistent widths. Sheet to Art reads that structure first, then typesets it:
 
-#### 2. Layout Heuristics & Section Engine (Sprint 2)
-- **Layout IR Type System (`LayoutIR`):** Strongly-typed multi-section document model (`TableSection`, `KpiGridContent`, `TextSectionContent`).
-- **Semantic Section Detector (`section-detector.ts`):** Prevents multi-table collapse on complex sheets by segmenting into distinct typed sections (Tables, KPI Cards, Callout Notes).
-- **Deterministic Header Scoring:** Calibrated formula evaluating candidate rows:
-  $$S = 0.60B + 0.30T + 0.05F + 0.03C + 0.02U$$
-  *(Threshold $S \ge 0.85$ identifies header rows vs. title banners).*
-- **Column Classification & Data Typing (`column-classifier.ts`):** Proportional column width allocation based on content density and automatic inference of `number`, `date`, `boolean`, `text`, and `mixed` types with semantic alignment rules.
-- **Proportional Column Width Allocation:** Square-root content length weighting ($w_j \propto \sqrt{\text{length}_j}$) prevents wide text columns from compressing numeric data.
-- **Page Geometry Optimizer:** Dynamic orientation switching (`portrait` / `landscape`) and font scale compression (down to 7.5pt) for wide spreadsheet layouts.
-- **Layout Web Worker & Comlink RPC:** Fully decoupled Web Worker with progress callbacks and main-thread fallback bridges.
+1. **Parse** the workbook into a normalized cell grid (`CellIR`) with styles, merges and sheet metadata.
+2. **Understand** the sheet: segment it into typed sections, score candidate header rows, classify columns and allocate widths.
+3. **Typeset** with [Typst](https://typst.app/) compiled to WebAssembly, then assemble the PDF and render vector previews.
 
-#### 3. Typst WASM Typesetting & PDF Generation (Sprint 3)
-- **Typst 0.11+ Source Generator:** Translates `LayoutIR` into modern Typst markup with `context` blocks for dynamic headers/footers, repeating `table.header(...)`, styled KPI cards, and note blocks.
-- **Syntax Escaper & Sanitizer:** Comprehensive character sanitizer escaping `\`, `[`, `]`, `#`, `$`, `_`, `*`, `@`, `<`, `>`, `"`, `~`.
-- **5 Core Launch Themes:**
-  1. `modern-clean` (Default sans-serif, blue accent `#2563EB`, subtle slate borders)
-  2. `executive-serif` (Classic serif typography, dark slate `#1E293B` header)
-  3. `compact-ledger` (High density, monospace-accented, tight padding)
-  4. `emerald-report` (Modern dashboard green `#059669`)
-  5. `monochrome-pure` (Crisp black & white laser printing)
-- **Vector Glyph Post-Processor:** Post-processes vector SVG glyphs (`fill: var(--glyph_fill, inherit)`, `stroke: var(--glyph_stroke, none)`) ensuring crisp rendering across all browsers.
-- **In-Memory PDF Assembler (`pdf-lib`):** Merging multi-section PDF buffers, extracting page counts, stamping document metadata.
-- **Typst WASM Compiler Wrapper (`@myriaddreamin/typst.ts`):** 100% offline, zero-network WASM compilation yielding clean `Uint8Array` PDF buffers and page SVG vector previews.
-- **Typst Web Worker & Comlink RPC:** Offloaded typesetting pipeline in dedicated worker.
+## Features
 
-#### 4. Interactive Studio UI, Multi-Sheet Workspace & Persistence (Sprint 4)
-- **Interactive Studio Workspace (`StudioLayout.tsx`):** Split-pane reactive workspace with Header, Sidebar, Toolbar, and Preview Viewport.
-- **Multi-Sheet Navigation:** Interactive tab bar in Header and sidebar sheet selector with instantaneous re-compilation and buffer persistence.
-- **Dual Preview Modes:** Seamless toggling between Vector PDF View (WASM typeset) and Document View (semantic HTML).
-- **Persistence & Auto-Restore:** IndexedDB caching for active workbook buffer and user customization options with automatic restoration on page reload.
-- **Live Theme & Layout Customization:** Live switching across all 5 themes, page size (A4, Letter, Legal, A3, A5), orientation (Auto, Portrait, Landscape), margins, and font scaling.
-- **Export Flow & Download Utility:** Same-origin Blob download modal with custom filename support and native print triggers.
-- **Mobile Responsive Workspace:** Responsive drawer navigation and horizontal theme carousel for touch devices with 44px+ touch targets.
+- **Semantic section detection** — separates tables, KPI grids and callout notes instead of collapsing a sheet into one table.
+- **Deterministic header scoring** — a weighted formula (`0.60 B + 0.30 T + 0.05 F + 0.03 C + 0.02 U`) distinguishes real header rows from title banners.
+- **Column classification and width allocation** — infers `number`, `date`, `boolean`, `text` and `mixed` types, aligns values correctly, and uses square-root content weighting so wide text columns do not crush numeric ones.
+- **Page geometry optimizer** — switches portrait/landscape and compresses font size (down to 7.5pt) for wide layouts.
+- **Five launch themes** — `modern-clean`, `executive-serif`, `compact-ledger`, `emerald-report`, `monochrome-pure`.
+- **Multi-sheet workspace** — tab bar and sidebar navigation; each sheet recompiles independently.
+- **Dual preview** — vector PDF pages from Typst WASM, or a semantic HTML document view.
+- **Live page setup** — A4, Letter, Legal, A3, A5; orientation, margins and font scale.
+- **Persistence** — IndexedDB restores the active workbook and your options after a reload.
+- **Export** — download with a custom filename, or print from the browser.
+- **Responsive UI** — desktop split-pane studio and a mobile layout with a horizontal theme carousel.
+- **Private by construction** — no server, no upload, no telemetry, no remote fonts during layout or compilation.
 
----
+## How it works
 
-## Architecture
-
-```
-Raw Spreadsheet (.xlsx / .csv)
-       │
-       ▼ [Parser Worker - Comlink RPC]
-Raw Matrix + Cell Properties + Merged Cells + Multi-Sheet Discovery
-       │
-       ▼ [Normalization & Section Detection]
-Clean Bounding-Box Normalized 2D Grid (Cell IR) & Semantic Sections
-       │
-       ▼ [Layout Worker - Comlink RPC]
-Header Scoring Heuristics + Section Segmentation + Geometry Optimization
-       │
-       ▼ [Layout IR Output]
-Structured Document Sections (Tables, KPI Grids, Notes) & Page Styles
-       │
-       ▼ [Typst Worker - Comlink RPC]
-Typst 0.11+ Markup + Typst WASM Compilation + Vector Glyph Post-Processing ──► Publication-Grade PDF & Vector SVG
+```text
+.xlsx / .csv
+     |
+     v
+Parser Web Worker  (ExcelJS / PapaParse)
+     |  CellIR + styles + merges + sheet metadata
+     v
+Layout pipeline  (section detection, header scoring, column typing, geometry)
+     |  LayoutIR: tables, KPI grids, text sections, page styles
+     v
+Typst Web Worker  (markup generation + Typst WASM compilation)
+     |  PDF buffers + vector page SVGs
+     v
+Preview / export
 ```
 
-### Privacy & Security
-- **100% Client-Side:** Zero file data or document content leaves the browser.
-- **Zero Network Dependency:** No external API or remote font calls during layout or PDF computation.
-- **Sandboxed Execution:** Multi-threaded computation isolated in Web Workers.
+The main thread talks to the parser, layout and Typst workers over [Comlink](https://github.com/GoogleChromeLabs/comlink) RPC, so parsing and typesetting do not block the UI. `pdf-lib` merges section buffers, stamps metadata and reports page counts.
 
----
+## Quality
 
-## Quality Gates & Verification
+| Check | Result |
+|---|---|
+| Tests | **170 passing** across **39** Vitest files |
+| Types | `tsc --noEmit` clean with `strict` + `noUncheckedIndexedAccess` |
+| Build | production Vite build: app, 3 worker chunks, Typst compiler/renderer WASM, local fonts |
+| CI | GitHub Actions runs type check, tests and build on every push and pull request |
+| Deploy | `master` is tested, built and published to GitHub Pages |
 
-- **Tests:** 170 passing tests across 39 test files (`Vitest`)
-  - Unit tests: Studio store, Preview viewport, Typst generator, Section detector, XLSX parser, Sidebar controls, Document pipeline, Persistence, UI primitives, Header detector, Column width allocator, Dropzone, Typst compiler, Layout engine, Column classifier, Export flow, Typst themes, Layout IR, CSV parser, PDF assembler, Sample data, Theme selector, Typst escaper, Cell IR, Parser worker, Layout worker, Typst worker, Typst types.
-  - Integration tests: GATE 2027 end-to-end acceptance, GATE 2027 data fidelity (all 7 sheets), Product core acceptance, PDF generation flow, Studio UI flow, Mobile responsiveness, Parse flow, Layout flow, Persistence auto-restore flow, GATE 2027 studio UI flow.
-- **Strict TypeScript:** `npx tsc --noEmit` clean with `strict: true` and `noUncheckedIndexedAccess: true` (0 errors).
-- **Production Build:** `npm run build` cleanly bundles main app, 3 Web Worker chunks, WASM modules, and CSS assets.
+The suite includes unit tests for the parser, section detector, header detector, column classifier/allocator, Typst generator, escaper, PDF assembler and studio store, plus integration flows over a real seven-sheet GATE 2027 workbook and UI journeys for upload, sheet switching, themes, page setup and export.
 
----
+## Quick start
 
-## Quick Start
-
-### Prerequisites
-- Node.js >= 20.x
-- npm >= 10.x
-
-### Installation
+**Prerequisites:** Node.js 20+ and npm 10+.
 
 ```bash
-npm install
-```
-
-### Development Server
-
-```bash
+git clone https://github.com/YJHacker/Sheet-to-Art.git
+cd Sheet-to-Art
+npm ci
 npm run dev
 ```
 
-### Test Suite & Production Build
+Open `http://localhost:5173` and drop a spreadsheet (or use the built-in sample).
 
-```bash
-# Run full unit and integration test suite
-npm test -- --run
+### Scripts
 
-# Strict TypeScript type check
-npx tsc --noEmit
+| Command | What it does |
+|---|---|
+| `npm run dev` | Vite dev server with HMR |
+| `npm test` | Run the full Vitest suite once |
+| `npm run test:watch` | Vitest in watch mode |
+| `npx tsc --noEmit` | Strict type check |
+| `npm run build` | Type check and build to `dist/` |
 
-# Build production bundle
-npm run build
-```
+Production builds use `base: /Sheet-to-Art/` for GitHub Pages; the dev server stays at `/`. Change the `base` value in `vite.config.ts` if you host it under a different path.
 
----
-
-## Tech Stack
+## Tech stack
 
 | Layer | Technology |
 |---|---|
-| **Bundler & Tooling** | Vite 5.4+, TypeScript 5.6+ |
-| **Worker RPC Bridge** | Comlink 4.4+ |
-| **Spreadsheet Ingestion** | ExcelJS 4.4+ (XLSX), PapaParse 5.4+ (CSV) |
-| **Layout & Heuristic Engine** | Custom deterministic TypeScript layout orchestrator |
-| **Typesetting & PDF Engine** | `@myriaddreamin/typst.ts` (Typst 0.11+ WASM), `pdf-lib` |
-| **Testing** | Vitest 2.1+ |
+| UI | React 18, TypeScript, Vite 5, Tailwind CSS |
+| State | Zustand |
+| Spreadsheet ingestion | ExcelJS (XLSX), PapaParse (CSV) |
+| Layout engine | Custom deterministic TypeScript |
+| Typesetting | `@myriaddreamin/typst.ts` (Typst WASM), `pdf-lib` |
+| Workers | Dedicated Web Workers + Comlink RPC |
+| Tests | Vitest, Testing Library, jsdom |
 
----
+## Project structure
 
-## Documentation Links
+```text
+index.html
+src/
+  components/     studio UI, preview, sidebar, header, modals
+  lib/
+    layout/       section detection, header scoring, column geometry
+    pipeline/     document orchestration
+    storage/      IndexedDB persistence
+    typst/        markup generation, WASM compiler, themes
+    utils/
+  store/          Zustand studio state
+  types/          CellIR, LayoutIR and shared contracts
+  workers/        parser, layout and Typst workers
+tests/
+  unit/           parser, layout, typesetting, UI primitives
+  integration/    end-to-end flows and real-workbook acceptance
+docs/             architecture specs and sprint plans
+logo_sheettoart/  brand assets
+```
 
-- [Architectural Specification](docs/superpowers/specs/2026-09-21-spreadsheet-pdf-engine-design.md)
-- [Sprint 1 Plan](docs/superpowers/plans/2026-09-21-sprint-1-parser-cell-ir.md)
-- [Sprint 2 Plan](docs/superpowers/plans/2026-09-22-sprint-2-layout-heuristics-section-engine.md)
-- [Sprint 3 Plan](docs/superpowers/plans/2026-09-23-sprint-3-typst-wasm-pdf-pipeline.md)
-- [Project State & Handoff](PROJECT_STATE.md)
-- [Worker Architecture Guide](src/workers/README.md)
+## Limitations and roadmap
+
+- The Typst compiler WASM is about **29 MB** on first load. It is cached afterwards, but lazy-loading and splitting it is the next performance win.
+- Sprint 5 — preset templates, batch multi-sheet export and final polish — is **planned, not shipped**.
+- Layout heuristics are tuned on real academic planning workbooks. Unusual sheet shapes may need rule tuning.
+- UI behaviour is covered in jsdom; there is no Playwright browser suite yet.
+- Very wide, multi-table sheets are still best handled on a desktop viewport.
+
+Roadmap:
+
+- [ ] Preset templates and batch multi-sheet export (Sprint 5)
+- [ ] Lazy-load and split the Typst WASM bundle
+- [ ] Playwright end-to-end coverage in Chromium and WebKit
+- [ ] Upgrade Vite/Typst and clear remaining dependency advisories
+- [ ] Manual section correction for ambiguous sheets
+
+## Documentation
+
+- [Architecture specification](docs/superpowers/specs/2026-09-21-spreadsheet-pdf-engine-design.md)
+- [Sprint 1 plan — parser and CellIR](docs/superpowers/plans/2026-09-21-sprint-1-parser-cell-ir.md)
+- [Sprint 2 plan — layout heuristics](docs/superpowers/plans/2026-09-22-sprint-2-layout-heuristics-section-engine.md)
+- [Sprint 3 plan — Typst WASM pipeline](docs/superpowers/plans/2026-09-23-sprint-3-typst-wasm-pdf-pipeline.md)
+- [Worker architecture](src/workers/README.md)
+
+## License
+
+MIT © 2026 Yash Chauhan — see [LICENSE](LICENSE).

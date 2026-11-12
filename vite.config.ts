@@ -1,7 +1,9 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
-export default defineConfig({
+export default defineConfig(({ command }) => ({
+  // GitHub Pages serves the app from /Sheet-to-Art/. Keep the dev server at /.
+  base: command === 'build' ? '/Sheet-to-Art/' : '/',
   plugins: [react()],
   server: {
     host: true,
@@ -28,4 +30,4 @@ export default defineConfig({
     include: ['tests/**/*.test.ts', 'tests/**/*.test.tsx'],
     exclude: ['**/node_modules/**', '**/dist/**', '**/.claude-omniroute/**', '**/.claude/**'],
   },
-});
+}));
